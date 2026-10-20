@@ -1,0 +1,254 @@
+---
+title: "Scaling relationships between global niche overlap and local community assembly (Mantel test and residuals)"
+author: "Mónica Gómez-Vadillo"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    theme: flatly
+    highlight: tango
+  pdf_document:
+    latex_engine: xelatex
+    toc: true
+    toc_depth: 2
+  word_document:
+    toc: true
+    toc_depth: '2'
+lang: es
+---
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+
+# LOAD PAKAGES
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(sf)
+library(vegan)
+library(daee)
+library(knitr)
+library(kableExtra)
+library(patchwork)
+```
+
+# DEFINE THE WORKING DIRECTORY
+
+```{r}
+#local = "__CONFIGURE_PATH_01__"
+local = "__CONFIGURE_PATH_02__"
+
+local_coocurrence <- paste0(local, "/02_DATA_GENOVEVA/01_outputs/cooccurrence_matrices")
+global_matrix_dir = paste0(local,"/Niche_bentic_species/05_Results_Mantel_Test/01_Matrix")
+
+save_path=paste0(local,"/02_DATA_GENOVEVA/01_outputs/Mantel_results")
+save_path_matrix=paste0(local,"/02_DATA_GENOVEVA/01_outputs/Mantel_results/01_Matrix")
+
+list_global_species = paste0(local, "/02_DATA_GENOVEVA/species_hv_names_tax.xlsx")
+setwd(local)
+```
+
+# LOAD GLOBAL NICHE OVERLAP MATRICES
+
+```{r}
+schoener_matrix <- read.csv(paste0(global_matrix_dir,"/schoener_matrix.csv"))
+#head(schoener_matrix)
+
+niche_jaccard_matrix <- read.csv(paste0(global_matrix_dir,"/niche_jaccard_matrix.csv"))
+#head(niche_jaccard_matrix)
+
+niche_distance_matrix <- read.csv(paste0(global_matrix_dir,"/niche_distance_matrix.csv"))
+#head(niche_distance_matrix)
+     
+```
+
+# LOAD LOCAL COOCURRENCE MATRICES
+
+
+```{r}
+jaccard_5m_mat <- read.csv(paste0(local_coocurrence,"/jaccard_distance_5m.csv"))
+#head(jaccard_5m_mat)
+jaccard_40m_mat <- read.csv(paste0(local_coocurrence,"/jaccard_distance_40m.csv"))
+#head(jaccard_40m_mat)
+jaccard_400m_mat <- read.csv(paste0(local_coocurrence,"/jaccard_distance_400m.csv"))
+#head(jaccard_400m_mat)
+
+```
+
+```{r}
+# funcion para ponerel nombre de las especies tambien como rownames
+clean_names <- function(x) {
+  x %>%
+    as.character() %>%
+    trimws() %>%
+    gsub("\\.", " ", .) %>%
+    gsub("_", " ", .) %>%
+    gsub("\\s+", " ", .)
+}
+
+fix_square_matrix <- function(mat_or_df) {
+  df <- as.data.frame(mat_or_df)
+  sp_names <- clean_names(df$X)
+  df <- df %>%
+    select(-X)
+  colnames(df) <- clean_names(colnames(df))
+  rownames(df) <- sp_names
+  mat <- as.matrix(df)
+  mode(mat) <- "numeric"
+  return(mat)
+}
+
+jaccard_5m_mat <- fix_square_matrix(jaccard_5m_mat)
+jaccard_40m_mat <- fix_square_matrix(jaccard_40m_mat)
+jaccard_400m_mat <- fix_square_matrix(jaccard_400m_mat)
+
+niche_jaccard_matrix <- fix_square_matrix(niche_jaccard_matrix)
+schoener_matrix <- fix_square_matrix(schoener_matrix)
+niche_distance_matrix <- fix_square_matrix(niche_distance_matrix)
+```
+
+
+```{r}
+all(rownames(jaccard_5m_mat) == colnames(jaccard_5m_mat))
+
+all(rownames(niche_jaccard_matrix) == colnames(niche_jaccard_matrix))
+```
+## Convert to distance
+
+```{r}
+# Convert schoener_matrix to distance
+schoener_matrix_dist <- 1 - schoener_matrix
+
+# Convert Jaccard similarity to distance
+niche_jaccard_dist <- 1 - niche_jaccard_matrix
+
+```
+
+
+
+# COMMON SPECIES BETWEN GLOBAL MATRICES AND LOCAL SCALE 5 M
+
+```{r}
+local_mats <- list(
+  "5m" = jaccard_5m_mat,
+  "40m" = jaccard_40m_mat,
+  "400m" = jaccard_400m_mat
+)
+
+global_mats <- list(
+  "HV_Jaccard" = niche_jaccard_dist,
+  "Schoener" = schoener_matrix_dist,
+  "Centroid" = niche_distance_matrix
+)
+```
+
+```{r}
+library(vegan)
+
+mantel_results <- list()
+
+for(local_name in names(local_mats)){
+
+  for(global_name in names(global_mats)){
+
+    # matrices
+    local_mat <- local_mats[[local_name]]
+    global_mat <- global_mats[[global_name]]
+
+    # especies comunes
+    common_sp <- intersect(
+      rownames(local_mat),
+      rownames(global_mat)
+    )
+
+    # filtrar
+    local_filt <- local_mat[
+      common_sp,
+      common_sp
+    ]
+
+    global_filt <- global_mat[
+      common_sp,
+      common_sp
+    ]
+
+    # comprobar orden
+    stopifnot(
+      all(rownames(local_filt) == rownames(global_filt))
+    )
+
+    # mantel
+    mantel_out <- mantel(
+      as.dist(local_filt),
+      as.dist(global_filt),
+      method = "pearson",
+      permutations = 9999
+    )
+
+    # guardar resultados
+    mantel_results[[paste(local_name, global_name, sep = "_")]] <-
+
+      data.frame(
+        local_scale = local_name,
+        niche_metric = global_name,
+        n_species = length(common_sp),
+        mantel_r = mantel_out$statistic,
+        p_value = mantel_out$signif
+      )
+  }
+}
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+mantel_results_df <- bind_rows(mantel_results)
+write.csv(mantel_results_df,  paste0(save_path, "/mantel_results_df.csv"),row.names = TRUE)
+
+mantel_results_df
+
+
+```
+
+
+```{r}
+colors <- c(
+  "HV_Jaccard" = "#80cdc1",
+  "Schoener"   = "#a6cee3",
+  "Centroid"   = "#ba8bc9ff"
+)
+
+line_plot <- ggplot(
+    mantel_results_df,
+    aes(
+      x = local_scale,
+      y = mantel_r,
+      color = niche_metric,
+      group = niche_metric
+    )
+  ) +
+  labs(
+    y = "Mantel correlation (r)",
+    x = "Local scale"
+  ) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 3) +
+  scale_color_manual(values = colors) +
+  theme_classic(base_size = 14)
+
+line_plot
+```
+
+```{r}
+ggsave("line_plot.png", plot = line_plot, width = 5, height = 5, units = "in", dpi = 600)
+
+```
+
+

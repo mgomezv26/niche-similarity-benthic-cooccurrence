@@ -1,0 +1,905 @@
+---
+title: "Testing the relationship between co-occurrence and niche similarity (Mantel
+  test and residuals)"
+author: "Mónica Gómez-Vadillo"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    theme: flatly
+    highlight: tango
+  pdf_document:
+    latex_engine: xelatex
+    toc: true
+    toc_depth: 2
+  word_document:
+    toc: true
+    toc_depth: '2'
+lang: es
+---
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+
+# LOAD PAKAGES
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(sf)
+library(vegan)
+library(hypervolume)
+library(daee)
+library(paletteer)
+library(knitr)
+library(kableExtra)
+library(patchwork)
+```
+
+# DEFINE THE WORKING DIRECTORY
+
+```{r}
+#local = "__CONFIGURE_PATH_01__"
+local = "__CONFIGURE_PATH_02__"
+niche_overlap_dir = paste0(local,"/03_Hypervolumes/06_Hipervolume_results")
+coocurrence_dir = paste0(local,"/04_Coocurrence")
+
+save_path=paste0(local,"/05_Results_Mantel_Test")
+save_path_matrix = paste0(local,"/05_Results_Mantel_Test/01_Matrix")
+save_path_figs = paste0(local,"/06_Figures")
+
+setwd(local)
+
+```
+
+
+# LOAD DATA NICHE OVERLAP DATA
+
+## Probabilistic niche overlap (Schoener’s D based on density distributions)
+
+```{r}
+Schoener_overlap <- read.csv(paste0(niche_overlap_dir,"/02_Shoener/schoener_D_pairs_round_1_n_100000.csv"))
+head(Schoener_overlap)
+```
+
+### Create square matrix (niche similarity)
+
+```{r}
+summary(Schoener_overlap)
+```
+
+
+```{r}
+norm <- function(x) enc2utf8(trimws(gsub("\\s+", " ", x)))
+
+niche_sym <- Schoener_overlap %>%
+  transmute(sp1 = norm(sp1), sp2 = norm(sp2), schoener_D) %>%
+  bind_rows(
+    Schoener_overlap %>% transmute(sp1 = norm(sp2), sp2 = norm(sp1), schoener_D)
+  ) %>%
+  distinct(sp1, sp2, .keep_all = TRUE)
+
+species <- sort(unique(c(niche_sym$sp1, niche_sym$sp2)))
+
+#### Create empty matrix
+schoener_matrix <- matrix(NA_real_, nrow = length(species), ncol = length(species),
+                    dimnames = list(species, species))
+
+#### Fill upper half
+schoener_matrix[cbind(niche_sym$sp1, niche_sym$sp2)] <- niche_sym$schoener_D
+
+#### Force symmetry: copy values from top to bottom
+schoener_matrix[lower.tri(schoener_matrix)] <- t(schoener_matrix)[lower.tri(schoener_matrix)]
+
+####Diagonal = 1
+diag(schoener_matrix) <- 1
+
+#### Check
+stopifnot(identical(rownames(schoener_matrix), colnames(schoener_matrix)))
+
+schoener_matrix[1:6, 1:6]
+
+```
+
+
+```{r}
+#### Check same species and order
+stopifnot(identical(rownames(schoener_matrix), colnames(schoener_matrix)))  # same species and order
+summary(as.vector(schoener_matrix[row(schoener_matrix)!=col(schoener_matrix)]))
+
+```
+
+```{r}
+#### === Export RDS format
+saveRDS(schoener_matrix,  paste0(save_path_matrix, "/schoener_matrix.rds"))
+
+#### === Export CSV format
+write.csv(schoener_matrix,
+          paste0(save_path_matrix, "/schoener_matrix.csv"),
+          row.names = TRUE)
+
+```
+
+
+## Geometric niche overlap (Jaccard index based on hypervolume intersections)
+
+```{r}
+niche_overlap <- read.csv(paste0(niche_overlap_dir,"/pairwise_hypervolume_overlap_all_species.csv"))
+head(niche_overlap)
+```
+
+## Create square Jaccard matrix (niche similarity)
+
+```{r}
+data_niche_jaccard<- niche_overlap %>%
+  select(sp1, sp2, jaccard)
+```
+
+```{r}
+summary(data_niche_jaccard)
+```
+
+
+```{r}
+norm <- function(x) enc2utf8(trimws(gsub("\\s+", " ", x)))
+
+niche_sym <- data_niche_jaccard %>%
+  transmute(sp1 = norm(sp1), sp2 = norm(sp2), jaccard) %>%
+  bind_rows(
+    data_niche_jaccard %>% transmute(sp1 = norm(sp2), sp2 = norm(sp1), jaccard)
+  ) %>%
+  distinct(sp1, sp2, .keep_all = TRUE)
+
+species <- sort(unique(c(niche_sym$sp1, niche_sym$sp2)))
+
+#### Create empty matrix
+niche_jaccard_matrix <- matrix(NA_real_, nrow = length(species), ncol = length(species),
+                    dimnames = list(species, species))
+
+#### Fill upper half
+niche_jaccard_matrix[cbind(niche_sym$sp1, niche_sym$sp2)] <- niche_sym$jaccard
+
+#### Force symmetry: copy values from top to bottom
+niche_jaccard_matrix[lower.tri(niche_jaccard_matrix)] <- t(niche_jaccard_matrix)[lower.tri(niche_jaccard_matrix)]
+
+#### Diagonal = 1
+diag(niche_jaccard_matrix) <- 1
+
+#### Check
+stopifnot(identical(rownames(niche_jaccard_matrix), colnames(niche_jaccard_matrix)))
+
+niche_jaccard_matrix[1:6, 1:6]
+
+```
+
+
+```{r}
+#### Check same species and order
+stopifnot(identical(rownames(niche_jaccard_matrix), colnames(niche_jaccard_matrix)))  # same species and order
+summary(as.vector(niche_jaccard_matrix[row(niche_jaccard_matrix)!=col(niche_jaccard_matrix)]))
+
+```
+
+```{r}
+#### === Export RDS format
+saveRDS(niche_jaccard_matrix,  paste0(save_path_matrix, "/niche_jaccard_matrix.rds"))
+
+#### === Export CSV format
+write.csv(niche_jaccard_matrix,
+          paste0(save_path_matrix, "/niche_jaccard_matrix.csv"),
+          row.names = TRUE)
+
+```
+
+## Niche position (Euclidean distance between hypervolume centroids)
+
+```{r}
+data_niche_distance<- niche_overlap %>%
+  select(sp1, sp2, distance)
+```
+
+```{r}
+summary(data_niche_distance)
+```
+
+
+```{r}
+norm <- function(x) enc2utf8(trimws(gsub("\\s+", " ", x)))
+niche_sym <- data_niche_distance %>%
+  transmute(sp1 = norm(sp1), sp2 = norm(sp2), distance) %>%
+  bind_rows(
+    data_niche_distance %>% transmute(sp1 = norm(sp2), sp2 = norm(sp1), distance)
+  ) %>%
+  distinct(sp1, sp2, .keep_all = TRUE)
+species <- sort(unique(c(niche_sym$sp1, niche_sym$sp2)))
+niche_distance_matrix <- matrix(NA_real_, nrow = length(species), ncol = length(species),
+                    dimnames = list(species, species))
+niche_distance_matrix[cbind(niche_sym$sp1, niche_sym$sp2)] <- niche_sym$distance
+niche_distance_matrix[lower.tri(niche_distance_matrix)] <- t(niche_distance_matrix)[lower.tri(niche_distance_matrix)]
+diag(niche_distance_matrix) <- 0
+
+# Check
+stopifnot(identical(rownames(niche_distance_matrix), colnames(niche_distance_matrix)))
+niche_distance_matrix[1:6, 1:6]
+
+```
+
+
+```{r}
+# Check same species and order
+stopifnot(identical(rownames(niche_distance_matrix), colnames(niche_distance_matrix)))
+summary(as.vector(niche_distance_matrix[row(niche_distance_matrix)!=col(niche_distance_matrix)]))
+
+```
+
+
+```{r}
+#### === Export RDS format
+saveRDS(niche_distance_matrix, paste0(save_path_matrix, "/niche_distance_matrix.rds"))
+
+#### === Export CSV format
+write.csv(niche_distance_matrix,
+          paste0(save_path_matrix, "/niche_distance_matrix.csv"),
+          row.names = TRUE)
+```
+
+
+# LOAD DATA CO-OCCURRENCE MATRIX
+
+```{r}
+### Co-occurrence dissimilarity matrix 
+# JACCARD DISTANCE MATRIX
+
+cooc_jac_matrix <- readRDS(paste0(coocurrence_dir,"/jaccard_distance_matrix.rds"))
+cooc_jac_df <- read.csv(paste0(coocurrence_dir,"/jaccard_distance_matrix_long_format.csv"))
+```
+
+```{r}
+head(cooc_jac_df)
+```
+
+
+```{r}
+# === Export RDS format
+saveRDS(cooc_jac_matrix, paste0(save_path_matrix, "/cooc_jaccard_matrix.rds"))
+
+  # === Export CSV format
+write.csv(cooc_jac_matrix,
+          paste0(save_path_matrix, "/cooc_jaccard_matrix.csv"),
+          row.names = TRUE)
+```
+
+# DO SPECIES WITH OVERLAPPING SPATIAL NICHES CO-OCCUR MORE FREQUENTLY? – MANTEL TEST
+
+##  Convert Probabilistic niche overlap to distance - schoener_matrix to distance
+
+```{r}
+schoener_matrix_dist <- 1 - schoener_matrix
+```
+
+## Convert Geometric niche overlap to distance - Jaccard similarity to distance
+
+The Mantel test requires distances (greater = more distinct) rather than similarity values (0-1, greater = more similar).
+
+```{r}
+niche_jaccard_dist <- 1 - niche_jaccard_matrix
+```
+
+
+### Align all matrices (same species order)
+
+```{r}
+species_order <- Reduce(intersect, list(
+  rownames(schoener_matrix_dist),
+  colnames(schoener_matrix_dist),
+  rownames(niche_jaccard_dist),
+  colnames(niche_jaccard_dist),
+  rownames(niche_distance_matrix),
+  colnames(niche_distance_matrix),
+  rownames(cooc_jac_matrix),
+  colnames(cooc_jac_matrix)
+))
+
+write.csv(
+  species_order,
+  file.path(save_path, paste0("species_order.csv")),
+  row.names = FALSE
+)
+
+schoener_dist <- as.dist(schoener_matrix_dist[species_order, species_order])
+niche_jd      <- as.dist(niche_jaccard_dist[species_order, species_order])
+niche_cent    <- as.dist(niche_distance_matrix[species_order, species_order])
+cooc_mat      <- as.dist(cooc_jac_matrix[species_order, species_order])
+
+```
+
+
+## Co-occurrence vs. probabilistic niche overlap (Schoener’s D) - Mentel test 1.
+
+```{r}
+# Co-occurrence vs. niche similarity (Jaccard)
+mantel_schoener <- mantel(
+  cooc_mat, schoener_dist,
+  method = "pearson",
+  permutations = 1000
+)
+```
+
+
+```{r}
+mantel_schoener
+```
+
+Species with more similar ecological niches (according to Schoener D) tend to co-occur more frequently, but the effect is moderate.
+
+## Co-occurrence vs. geometric niche overlap (Jaccard) - Mentel test 2.
+
+```{r}
+# Co-occurrence vs. niche similarity (Jaccard)
+mantel_jaccard <- mantel(
+  cooc_mat, niche_jd,
+  method = "pearson",
+  permutations = 1000
+)
+```
+
+```{r}
+mantel_jaccard
+```
+Moderate positive correlation (almost strong). Niche overlap based on hypervolumes explains co-occurrence considerably better than Schoener D.
+
+
+## Co-occurrence vs. niche proximity (centroid distance) - Mentel test 3.
+
+```{r}
+mantel_centroid <- mantel(
+  cooc_mat, niche_cent,
+  method = "pearson",
+  permutations = 1000
+)
+```
+
+```{r}
+mantel_centroid
+```
+There is also a significant, but weaker, relationship. Average proximity in climatic space explains some of the co-occurrence, but less than total niche overlap.
+
+In other words, the pattern of co-occurrence among the benthic species in this study is partially explained by the similarity of their environmental niches, suggesting that environmental filtering plays a role, but is not the only factor.
+
+
+# PLOTS
+
+```{r}
+library(ggplot2)
+
+mantel_df <- data.frame(
+  cooc = as.vector(cooc_mat),
+  niche_jaccard = as.vector(niche_jd),
+  niche_centroid = as.vector(niche_cent),
+  schoener_d = as.vector(schoener_dist)
+)
+
+write.csv(mantel_df,
+          paste0(save_path, "/mantel_df_coocurrence.csv"))
+```
+
+
+```{r}
+plot1 <- ggplot(mantel_df, aes(x = schoener_d, y = cooc)) +
+  geom_point(alpha = 0.5, size = 1, , shape = 16, color = "#80cdc1") + # puntos azules con transparencia
+  geom_smooth(method = "lm", se = FALSE, color = "#018571", linewidth = 1) +
+  labs(title = "Niche overlap (Schoener’s D)",
+     x = "Niche distance (1 - Schoener D overlap)",
+     y = "Co-occurrence distance (Jaccard dissimilarity)") +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5),
+    axis.title = element_text(face = "bold"))
+
+plot1
+```
+
+```{r}
+ggsave(paste0(save_path_figs, "/plot1_nichesimilarity_DSchoener_co_mentel.png"),
+       plot = plot1, width = 10, height = 5, units = "in", dpi = 600)
+```
+
+
+```{r}
+plot2 <- ggplot(mantel_df, aes(x = niche_jaccard, y = cooc)) +
+  geom_point(alpha = 0.5, size = 1, , shape = 16, color = "#a6cee3") + # puntos azules con transparencia
+  geom_smooth(method = "lm", se = FALSE, color = "#1f78b4", linewidth = 1) +
+  labs(title = "Niche overlap (Hypervolume Jaccard)",
+     x = "Niche distance (1 - Jaccard overlap)",
+     y = "Co-occurrence distance (Jaccard dissimilarity)") +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5),
+    axis.title = element_text(face = "bold"))
+
+plot2
+```
+
+```{r}
+ggsave(paste0(save_path_figs, "/plot2_nichesimilarity_Jaccard_co_mentel.png"), 
+       plot = plot2, width = 10, height = 5, units = "in", dpi = 600)
+```
+
+
+```{r}
+plot3 <- ggplot(mantel_df, aes(x = niche_centroid, y = cooc)) +
+  geom_point(alpha = 0.5, size = 1, shape = 16, color = "#ba8bc9ff") + # puntos azules con transparencia
+  geom_smooth(method = "lm", se = FALSE, color = "#540046", linewidth = 1) +
+  labs(x = "Niche proximity (centroid distance)",
+       y = "Co-occurrence distance (Jaccard dissimilarity)",
+       title = "Niche proximity (centroid distance)") +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5),
+    axis.title = element_text(face = "bold"))
+
+plot3
+```
+
+```{r}
+ggsave(paste0(save_path_figs, "/plot3_nicheproximity_co_mentel.png"),
+       plot = plot3, width = 10, height = 5, units = "in", dpi = 600)
+```
+
+
+```{r}
+layout <- c(
+  area(t = 1, l = 1, b = 1, r = 2),  # plot2
+  area(t = 1, l = 3, b = 1, r = 4),  # plot1
+  area(t = 2, l = 2, b = 2, r = 3)   # plot3 centrado
+)
+
+combined_plot <- wrap_plots(
+  plot2, plot1, plot3,
+  design = layout
+)
+
+combined_plot
+```
+
+
+```{r}
+ggsave(paste0(save_path_figs, "/Combined_plot_coocurrence_niche.png"), 
+       plot = combined_plot, width = 20, height = 10, units = "in", dpi = 600)
+```
+
+# PAIRWISE DEVIATIONS FROM THE FITTED GLOBAL NICHE DISTANCE–CO-OCCURRENCE RELATIONSHIP
+
+```{r}
+# Residuos de los Mantel tests
+resid_schoener <- mantel.residuals(cooc_mat, schoener_dist)
+resid_jaccard  <- mantel.residuals(cooc_mat, niche_jd)
+resid_centroid <- mantel.residuals(cooc_mat, niche_cent)
+
+# save
+saveRDS(resid_schoener,  paste0(save_path, "/mantel_residuals_schoener.rds"))
+saveRDS(resid_jaccard,  paste0(save_path, "/mantel_residuals_jaccard.rds"))
+saveRDS(resid_centroid, paste0(save_path, "/mantel_residuals_centroid.rds"))
+
+```
+
+# RESIDUAL ANALISYS
+
+```{r}
+## ----
+## normalize names
+## ----
+norm_species <- function(x) {
+  enc2utf8(trimws(gsub("\\s+", " ", x)))
+}
+
+## ----
+## prepare residual df
+## ----
+prepare_residual_df <- function(residuals_obj, species_order) {
+  
+  resid_mat <- as.matrix(residuals_obj$residuals)
+  rownames(resid_mat) <- species_order
+  colnames(resid_mat) <- species_order
+  
+  # enforce symmetry and diagonal = 0
+  resid_mat <- (resid_mat + t(resid_mat)) / 2
+  diag(resid_mat) <- 0
+  
+  message("Matrix size: ", paste(dim(resid_mat), collapse = " x "))
+  message("Range: ", paste(round(range(resid_mat, na.rm = TRUE), 4), collapse = " to "))
+  
+  resid_df_unique <- as.data.frame(as.table(resid_mat)) %>%
+    rename(sp1 = Var1, sp2 = Var2, resid = Freq) %>%
+    filter(sp1 != sp2) %>%
+    mutate(
+      sp1 = norm_species(sp1),
+      sp2 = norm_species(sp2),
+      pair_key = if_else(sp1 < sp2,
+                         paste(sp1, sp2, sep = "_"),
+                         paste(sp2, sp1, sep = "_"))
+    ) %>%
+    distinct(pair_key, .keep_all = TRUE) %>%
+    arrange(desc(resid))
+  
+  return(resid_df_unique)
+}
+
+## ----
+## classify residuals
+## ----
+classify_residuals <- function(df, pos_thr, neg_thr) {
+  df %>%
+    mutate(
+      sign = case_when(
+        resid >  pos_thr ~ paste0("Positive (>", pos_thr, ")"),
+        resid <  neg_thr ~ paste0("Negative (<", neg_thr, ")"),
+        TRUE             ~ "Neutral"
+      ),
+      pair_id = factor(pair_key, levels = pair_key)
+    )
+}
+
+## ----
+## summary table
+## ----
+make_residual_summary <- function(df) {
+  df %>%
+    count(sign) %>%
+    mutate(perc = round(100 * n / sum(n), 2))
+}
+
+## ----
+## top pairs
+## ----
+get_top_pairs <- function(df, sign_label, n_top = 10) {
+  df %>%
+    filter(sign == sign_label) %>%
+    select(sp1, sp2, resid, sign) %>%
+    slice_head(n = n_top)
+}
+
+## ----
+# residual plot
+## ----
+make_residual_plot <- function(df, title_text, threshold_abs,
+                               low_col = "#540046",
+                               mid_col = "#f7f7f7",
+                               high_col = "#0F71AF",
+                               fill_limits = c(-0.5, 0.1),
+                               y_limits = c(-0.5, 0.1)) {
+  
+  ggplot(df, aes(x = pair_id, y = resid, fill = resid)) +
+    geom_col(width = 1) +
+    scale_fill_gradient2(
+      low = low_col,
+      mid = mid_col,
+      high = high_col,
+      midpoint = 0,
+      limits = fill_limits,
+      name = "Residual"
+    ) +
+    geom_hline(
+      yintercept = c(-threshold_abs, threshold_abs),
+      linetype = "dashed",
+      color = "grey50",
+      linewidth = 0.6
+    ) +
+    coord_cartesian(ylim = y_limits) +
+    theme_minimal(base_size = 13) +
+    theme(
+      panel.grid = element_blank(),
+      axis.text.x = element_blank(),
+      axis.ticks.x = element_blank(),
+      plot.title = element_text(face = "bold", hjust = 0),
+      axis.title = element_text(face = "bold"),
+      legend.title = element_text(face = "bold"),
+      plot.margin = margin(8, 8, 8, 8)
+    ) +
+    labs(
+      x = "Pairwise combinations (ordered)",
+      y = "Residual co-occurrence",
+      title = title_text
+    )
+}
+
+```
+
+```{r}
+## ----
+# Main wrapper
+## ----
+run_residual_workflow <- function(metric_name,
+                                  rds_file,
+                                  species_order,
+                                  save_path,
+                                  pos_thr = 0.05,
+                                  neg_thr = -0.05,
+                                  plot_file_prefix = "residual_spectrum",
+                                  fill_limits = c(-0.5, 0.1),
+                                  y_limits = c(-0.5, 0.1),
+                                  top_n = 10) {
+  
+  # 1. Load
+  residuals_obj <- readRDS(rds_file)
+  
+  # 2. Prepare
+  resid_df <- prepare_residual_df(residuals_obj, species_order)
+  resid_df <- classify_residuals(resid_df, pos_thr = pos_thr, neg_thr = neg_thr)
+  
+  # 3. Summary
+  resid_summary <- make_residual_summary(resid_df)
+  
+  # 4. Positive / negative subsets
+  positive_label <- paste0("Positive (>", pos_thr, ")")
+  negative_label <- paste0("Negative (<", neg_thr, ")")
+  
+  pairs_residual_positive <- resid_df %>%
+    filter(sign == positive_label)
+  
+  pairs_residual_negative <- resid_df %>%
+    filter(sign == negative_label)
+  
+  pairs_residual_positive_top <- get_top_pairs(resid_df, positive_label, n_top = top_n)
+  pairs_residual_negative_top <- get_top_pairs(resid_df, negative_label, n_top = top_n)
+  
+  # 5. Export csv
+  write.csv(
+    resid_summary,
+    file.path(save_path, paste0("residual_summary_", tolower(metric_name), ".csv")),
+    row.names = FALSE
+  )
+  
+  write.csv(
+    pairs_residual_positive,
+    file.path(save_path, paste0(metric_name, "_residual_positive.csv")),
+    row.names = FALSE
+  )
+  
+  write.csv(
+    pairs_residual_negative,
+    file.path(save_path, paste0(metric_name, "_residual_negative.csv")),
+    row.names = FALSE
+  )
+  
+  # 6. Plot
+  plot_title <- switch(
+    metric_name,
+    "Schoener" = "Pairwise residuals of niche similarity (Schoener's D)",
+    "Jaccard"  = "Pairwise residuals of niche similarity (Jaccard)",
+    paste0("Pairwise residuals of niche similarity (", metric_name, ")")
+  )
+  
+  p <- make_residual_plot(
+    df = resid_df,
+    title_text = plot_title,
+    threshold_abs = abs(pos_thr),
+    fill_limits = fill_limits,
+    y_limits = y_limits
+  )
+  
+  ggsave(
+    file.path(save_path, paste0(plot_file_prefix, "_", tolower(metric_name), ".png")),
+    plot = p,
+    width = 9,
+    height = 4,
+    dpi = 400
+  )
+  
+  return(list(
+    residuals_obj = residuals_obj,
+    resid_df = resid_df,
+    resid_summary = resid_summary,
+    pairs_positive = pairs_residual_positive,
+    pairs_negative = pairs_residual_negative,
+    pairs_positive_top = pairs_residual_positive_top,
+    pairs_negative_top = pairs_residual_negative_top,
+    plot = p
+  ))
+}
+
+```
+
+## Schoener
+
+```{r}
+res_s <- run_residual_workflow(
+  metric_name = "Schoener",
+  rds_file = file.path(save_path, "mantel_residuals_schoener.rds"),
+  species_order = species_order,
+  save_path = save_path,
+  pos_thr = 0.05,
+  neg_thr = -0.05,
+  plot_file_prefix = "residual_spectrum",
+  fill_limits = c(-0.5, 0.1),
+  y_limits = c(-0.5, 0.1)
+)
+
+res_s$plot
+res_s$resid_summary
+```
+
+## Jaccard
+
+```{r}
+res_j <- run_residual_workflow(
+  metric_name = "Jaccard",
+  rds_file = file.path(save_path, "mantel_residuals_jaccard.rds"),
+  species_order = species_order,
+  save_path = save_path,
+  pos_thr = 0.05,
+  neg_thr = -0.05,
+  plot_file_prefix = "residual_spectrum",
+  fill_limits = c(-0.5, 0.1),
+  y_limits = c(-0.5, 0.1)
+)
+
+res_j$plot
+res_j$resid_summary
+```
+
+## Combined plot
+
+```{r}
+resid_plot_df <- bind_rows(
+  res_j$resid_df %>% mutate(metric = "Jaccard"),
+  res_s$resid_df %>% mutate(metric = "Schoener's D")
+) %>%
+  group_by(metric) %>%
+  arrange(desc(resid), .by_group = TRUE) %>%
+  mutate(pair_order = row_number()) %>%
+  ungroup()
+```
+
+
+
+```{r}
+p_resid_facet <- ggplot(resid_plot_df, aes(x = pair_order, y = resid, fill = resid)) +
+  geom_col(width = 1) +
+  scale_fill_gradient2(
+    low = "#540046",
+    mid = "#f7f7f7",
+    high = "#0F71AF",
+    midpoint = 0,
+    limits = c(-0.5, 0.1),
+    name = "Residual"
+  ) +
+  geom_hline(yintercept = c(-0.05, 0.05), linetype = "dashed", color = "grey50") +
+  facet_wrap(~metric, ncol = 1, scales = "fixed") +
+  coord_cartesian(ylim = c(-0.5, 0.1)) +
+  theme_minimal(base_size = 13) +
+  theme(
+    panel.grid = element_blank(),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    strip.text = element_text(face = "bold"),
+    axis.title = element_text(face = "bold"),
+    legend.title = element_text(face = "bold")
+  ) +
+  labs(
+    title = "Residual co-occurrence patterns",
+    subtitle = "Positive = less co-occurrence than expected; Negative = more co-occurrence than expected",
+    x = "Species pairs (ordered within metric)",
+    y = "Residual co-occurrence"
+  )
+
+p_resid_facet
+```
+
+```{r}
+ggsave(filename = file.path(save_path_figs, "residual_spectrum_facet.png"),
+  plot = p_resid_facet, width = 8, height = 7, units = "in", dpi = 600)
+```
+
+
+## Show tables 
+
+### Summary
+
+```{r}
+res_s$resid_summary %>%
+  kbl(
+    caption = "Summary statistics of residuals (Schoener)",
+    align = "c",
+    digits = 3
+  ) %>%
+  kable_paper("hover", full_width = FALSE) %>%
+  column_spec(1, bold = TRUE) %>%
+  column_spec(3, width = "5em") %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    position = "center",
+    font_size = 13
+  )
+```
+
+```{r}
+res_j$resid_summary %>%
+  kbl(
+    caption = "Summary statistics of residuals (Jaccard)",
+    align = "c",
+    digits = 2
+  ) %>%
+  kable_paper("hover", full_width = FALSE) %>%
+  column_spec(1, bold = TRUE) %>%
+  column_spec(2, width = "4em") %>%
+  column_spec(3, width = "4em") %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    position = "center",
+    font_size = 13
+  )
+```
+
+
+### Top pairs
+
+```{r}
+res_s$pairs_positive_top %>%
+  kbl(
+    caption = "Top 10 species pairs with positive residuals (Schoener)",
+    align = "c",
+    digits = 3
+  ) %>%
+  kable_paper("hover", full_width = FALSE) %>%
+  column_spec(1:2, bold = TRUE) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    position = "center",
+    font_size = 13
+  )
+```
+
+
+```{r}
+res_s$pairs_negative_top %>%
+  kbl(
+    caption = "Top 10 species pairs with negative residuals (Schoener)",
+    align = "c",
+    digits = 3
+  ) %>%
+  kable_paper("hover", full_width = FALSE) %>%
+  column_spec(1:2, bold = TRUE) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    position = "center",
+    font_size = 13
+  )
+```
+
+
+```{r}
+res_j$pairs_positive_top %>%
+  kbl(
+    caption = "Top 10 species pairs with positive residuals (Jaccard)",
+    align = "c",
+    digits = 3
+  ) %>%
+  kable_paper("hover", full_width = FALSE) %>%
+  column_spec(1:2, bold = TRUE) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    position = "center",
+    font_size = 13
+  )
+```
+
+
+```{r}
+res_j$pairs_negative_top %>%
+  kbl(
+    caption = "Top 10 species pairs with negative residuals (Jaccard)",
+    align = "c",
+    digits = 3
+  ) %>%
+  kable_paper("hover", full_width = FALSE) %>%
+  column_spec(1:2, bold = TRUE) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    position = "center",
+    font_size = 13
+  )
+```
+
+

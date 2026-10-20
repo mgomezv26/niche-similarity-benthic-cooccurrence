@@ -1,0 +1,799 @@
+---
+title: "Does the global niche allow us to predict the structure of local communities?"
+author: "Mónica Gómez-Vadillo"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    theme: flatly
+    highlight: tango
+  pdf_document:
+    latex_engine: xelatex
+    toc: true
+    toc_depth: 2
+  word_document:
+    toc: true
+    toc_depth: '2'
+lang: es
+---
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+The question posed by this analysis is: does the global niche allow us to predict the structure of local communities?
+
+In other words, if two species have very similar global niches, do they actually occur together locally?
+And, Does this vary between 5m, 40m and 400m?
+
+# LOAD PAKAGES
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(sf)
+library(vegan)
+library(daee)
+library(knitr)
+library(kableExtra)
+library(patchwork)
+```
+
+# DEFINE THE WORKING DIRECTORY
+
+```{r}
+local = "__CONFIGURE_PATH_01__"
+#local = "__CONFIGURE_PATH_02__"
+
+local_coocurrence <- paste0(local, "/02_DATA_GENOVEVA/01_outputs/cooccurrence_matrices")
+global_matrix_dir = paste0(local,"/Niche_bentic_species/05_Results_Mantel_Test/01_Matrix")
+
+save_path=paste0(local,"/02_DATA_GENOVEVA/01_outputs/Mantel_results")
+save_path_matrix=paste0(local,"/02_DATA_GENOVEVA/01_outputs/Mantel_results/01_Matrix")
+
+list_global_species = paste0(local, "/02_DATA_GENOVEVA/species_hv_names_tax.xlsx")
+setwd(local)
+```
+
+
+
+# LOAD GLOBAL NICHE OVERLAP MATRICES
+
+la coocurrencia esperadaNO se calcula a partir de coocurrencia global sino a partir de: SIMILITUD DE NICHO GLOBAL
+
+```{r}
+schoener_matrix <- read.csv(paste0(global_matrix_dir,"/schoener_matrix.csv"))
+niche_jaccard_matrix <- read.csv(paste0(global_matrix_dir,"/niche_jaccard_matrix.csv"))
+```
+
+# LOAD LOCAL COOCURRENCE MATRICES
+
+```{r}
+jaccard_5m_mat <- read.csv(paste0(local_coocurrence,"/jaccard_distance_5m.csv"))
+jaccard_40m_mat <- read.csv(paste0(local_coocurrence,"/jaccard_distance_40m.csv"))
+jaccard_400m_mat <- read.csv(paste0(local_coocurrence,"/jaccard_distance_400m.csv"))
+
+```
+
+## Corregir las matrices
+
+```{r}
+clean_names <- function(x) {
+  x %>%
+    as.character() %>%
+    trimws() %>%
+    gsub("\\.", " ", .) %>%
+    gsub("_", " ", .) %>%
+    gsub("\\s+", " ", .)
+}
+
+fix_square_matrix <- function(mat_or_df) {
+  df <- as.data.frame(mat_or_df)
+  sp_names <- clean_names(df$X)
+  df <- df %>%
+    select(-X)
+  colnames(df) <- clean_names(colnames(df))
+  rownames(df) <- sp_names
+  mat <- as.matrix(df)
+  mode(mat) <- "numeric"
+  return(mat)
+}
+```
+
+```{r}
+schoener_matrix <- fix_square_matrix(schoener_matrix)
+niche_jaccard_matrix <- fix_square_matrix(niche_jaccard_matrix)
+
+jaccard_5m_mat <- fix_square_matrix(jaccard_5m_mat)
+jaccard_40m_mat <- fix_square_matrix(jaccard_40m_mat)
+jaccard_400m_mat <- fix_square_matrix(jaccard_400m_mat)
+```
+
+## Transformarlas a similitud
+
+```{r}
+local_sim_5m <- 1 - jaccard_5m_mat
+local_sim_40m <- 1 - jaccard_40m_mat
+local_sim_400m <- 1 - jaccard_400m_mat
+```
+
+```{r}
+summary(local_sim_5m)
+```
+
+# FILTRAR ESPECIES COMUNES POR ESCALA
+
+## Scale 5 m
+
+```{r}
+common_5m <- intersect(
+  rownames(local_sim_5m),
+  rownames(niche_jaccard_matrix)
+)
+
+obs_5m <- local_sim_5m[
+  common_5m,
+  common_5m
+]
+
+exp_5m <- niche_jaccard_matrix[
+  common_5m,
+  common_5m
+]
+```
+
+### PASAR A FORMATO PAIRWISE
+
+```{r}
+obs_5m_df <- as.data.frame(as.table(obs_5m))
+```
+
+```{r}
+colnames(obs_5m_df) <- c(
+  "sp1",
+  "sp2",
+  "observed_local"
+)
+
+head(obs_5m_df)
+```
+
+```{r}
+exp_5m_df <- as.data.frame(as.table(exp_5m))
+
+colnames(exp_5m_df) <- c(
+  "sp1",
+  "sp2",
+  "expected_global"
+)
+
+head(exp_5m_df)
+```
+
+### Join observed and expected 
+
+```{r}
+pairwise_5m <- left_join(
+  obs_5m_df,
+  exp_5m_df,
+  by = c("sp1", "sp2")
+)
+
+head(pairwise_5m)
+```
+
+### Remove duplicated and diagonal
+
+
+```{r}
+pairwise_5m <- pairwise_5m %>%
+  filter(sp1 != sp2)
+
+pairwise_5m <- pairwise_5m %>%
+  filter(as.character(sp1) < as.character(sp2))
+
+```
+
+
+### calculate residual
+
+```{r}
+pairwise_5m$residual <-
+  pairwise_5m$observed_local -
+  pairwise_5m$expected_global
+```
+
+
+## Scale 40 m
+
+```{r}
+common_40m <- intersect(
+  rownames(local_sim_40m),
+  rownames(niche_jaccard_matrix)
+)
+
+obs_40m <- local_sim_40m[
+  common_40m,
+  common_40m
+]
+
+exp_40m <- niche_jaccard_matrix[
+  common_40m,
+  common_40m
+]
+```
+
+### PASAR A FORMATO PAIRWISE
+
+```{r}
+obs_40m_df <- as.data.frame(as.table(obs_40m))
+```
+
+```{r}
+colnames(obs_40m_df) <- c(
+  "sp1",
+  "sp2",
+  "observed_local"
+)
+
+head(obs_40m_df)
+```
+
+```{r}
+exp_40m_df <- as.data.frame(as.table(exp_40m))
+
+colnames(exp_40m_df) <- c(
+  "sp1",
+  "sp2",
+  "expected_global"
+)
+
+head(exp_40m_df)
+```
+
+##3 Join observed and expected 
+
+```{r}
+pairwise_40m <- left_join(
+  obs_40m_df,
+  exp_40m_df,
+  by = c("sp1", "sp2")
+)
+
+head(pairwise_40m)
+```
+
+### Remove duplicated and diagonal
+
+
+```{r}
+pairwise_40m <- pairwise_40m %>%
+  filter(sp1 != sp2)
+
+pairwise_40m <- pairwise_40m %>%
+  filter(as.character(sp1) < as.character(sp2))
+
+```
+
+
+### calculate residual
+
+```{r}
+pairwise_40m$residual <-
+  pairwise_40m$observed_local -
+  pairwise_40m$expected_global
+```
+
+
+## Scale 400 m
+
+```{r}
+common_400m <- intersect(
+  rownames(local_sim_400m),
+  rownames(niche_jaccard_matrix)
+)
+
+obs_400m <- local_sim_400m[
+  common_400m,
+  common_400m
+]
+
+exp_400m <- niche_jaccard_matrix[
+  common_400m,
+  common_400m
+]
+```
+
+### PASAR A FORMATO PAIRWISE
+
+```{r}
+obs_400m_df <- as.data.frame(as.table(obs_400m))
+```
+
+```{r}
+colnames(obs_400m_df) <- c(
+  "sp1",
+  "sp2",
+  "observed_local"
+)
+
+head(obs_400m_df)
+```
+
+```{r}
+exp_400m_df <- as.data.frame(as.table(exp_400m))
+
+colnames(exp_400m_df) <- c(
+  "sp1",
+  "sp2",
+  "expected_global"
+)
+
+head(exp_400m_df)
+```
+
+##3 Join observed and expected 
+
+```{r}
+pairwise_400m <- left_join(
+  obs_400m_df,
+  exp_400m_df,
+  by = c("sp1", "sp2")
+)
+
+head(pairwise_400m)
+```
+
+### Remove duplicated and diagonal
+
+
+```{r}
+pairwise_400m <- pairwise_400m %>%
+  filter(sp1 != sp2)
+
+pairwise_400m <- pairwise_400m %>%
+  filter(as.character(sp1) < as.character(sp2))
+
+```
+
+
+### calculate residual
+
+```{r}
+pairwise_400m$residual <-
+  pairwise_400m$observed_local -
+  pairwise_400m$expected_global
+```
+
+
+## Join all dataframes
+
+```{r}
+pairwise_5m <- pairwise_5m %>% mutate(scale = "5m")
+pairwise_40m <- pairwise_40m %>% mutate(scale = "40m")
+pairwise_400m <- pairwise_400m %>% mutate(scale = "400m")
+
+head(pairwise_5m)
+```
+
+```{r}
+all_pairs <- bind_rows(
+  pairwise_5m,
+  pairwise_40m,
+  pairwise_400m
+)
+
+head(all_pairs)
+
+# === Export CSV format
+write.csv(all_pairs,paste0(save_path, "/residuals_diff_obs_exp.csv"),
+          row.names = TRUE)
+```
+
+```{r}
+colors <- c(
+  "5m"   = "#80cdc1",
+  "40m"  = "#a6cee3",
+  "400m" = "#ba8bc9ff"
+)
+
+plot <- ggplot(all_pairs,
+         aes(x = expected_global,
+             y = observed_local,
+             color = scale)) +
+    labs(x = "Expected co-occurrence from global niche overlap",
+           y = "Observed local co-occurrence") +
+    geom_point(alpha = 0.2, size = 1.8) +
+    geom_smooth(method = "lm", se = FALSE) +
+    scale_color_manual(values = colors) +
+    theme_classic(base_size = 14) +
+    theme(
+      legend.background = element_blank(),
+      legend.key = element_blank()
+    )
+
+plot
+
+```
+
+```{r}
+ggsave("global_niche_vs_local_cooccurrence_scalesv1.png", plot = plot, width = 7, height = 5, units = "in", dpi = 600)
+```
+
+
+# REGRESIÓN CUANTILICA
+
+## ¿Predice el nicho global igual las comunidades locales con baja, media y alta coexistencia?
+
+
+```{r}
+#install.packages("quantreg")
+library(quantreg)
+
+```
+
+```{r}
+rq_75 <- rq(
+  observed_local ~ expected_global * scale,
+  tau = 0.75,
+  data = all_pairs,
+  method = "fn"
+)
+
+summary(rq_75, se = "nid")
+```
+
+
+```{r}
+rq_90 <- rq(
+  observed_local ~ expected_global * scale,
+  tau = 0.9,
+  data = all_pairs,
+  method = "fn"
+)
+
+summary(rq_90, se = "nid")
+```
+
+
+```{r}
+summary(all_pairs$observed_local)
+
+hist(all_pairs$observed_local, breaks = 100)
+
+quantile(
+  all_pairs$observed_local,
+  probs = c(0.1,0.25,0.5,0.75,0.9)
+)
+```
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(quantreg)
+
+# Asegurar orden de escalas
+all_pairs <- all_pairs %>%
+  mutate(
+    scale = factor(scale, levels = c("5m", "40m", "400m"))
+  )
+
+# Reajustar modelos cuantílicos
+rq_75 <- rq(
+  observed_local ~ expected_global * scale,
+  tau = 0.75,
+  data = all_pairs,
+  method = "fn"
+)
+
+rq_90 <- rq(
+  observed_local ~ expected_global * scale,
+  tau = 0.90,
+  data = all_pairs,
+  method = "fn"
+)
+
+# Crear datos de predicción
+pred_grid <- expand.grid(
+  expected_global = seq(
+    min(all_pairs$expected_global, na.rm = TRUE),
+    max(all_pairs$expected_global, na.rm = TRUE),
+    length.out = 200
+  ),
+  scale = levels(all_pairs$scale)
+)
+
+pred_75 <- pred_grid %>%
+  mutate(
+    observed_pred = predict(rq_75, newdata = pred_grid),
+    tau = "τ = 0.75"
+  )
+
+pred_90 <- pred_grid %>%
+  mutate(
+    observed_pred = predict(rq_90, newdata = pred_grid),
+    tau = "τ = 0.90"
+  )
+
+pred_all <- bind_rows(pred_75, pred_90)
+
+# Colores
+colors <- c(
+  "5m"   = "#80cdc1",
+  "40m"  = "#a6cee3",
+  "400m" = "#ba8bc9"
+)
+
+# Figura
+fig_quantile <- ggplot() +
+  geom_point(
+    data = all_pairs,
+    aes(
+      x = expected_global,
+      y = observed_local,
+      colour = scale
+    ),
+    alpha = 0.18,
+    size = 0.8
+  ) +
+  geom_line(
+    data = pred_all,
+    aes(
+      x = expected_global,
+      y = observed_pred,
+      colour = scale,
+      linetype = tau
+    ),
+    linewidth = 1
+  ) +
+  facet_wrap(~ scale, nrow = 1) +
+  scale_colour_manual(values = colors) +
+  labs(
+    x = "Expected co-occurrence from global niche overlap",
+    y = "Observed local co-occurrence",
+    colour = "Spatial scale",
+    linetype = "Quantile"
+  ) +
+  theme_classic(base_size = 12) +
+  theme(
+    legend.position = "top",
+    strip.text = element_text(face = "bold"),
+    axis.title = element_text(face = "bold")
+  )
+
+fig_quantile
+```
+```{r}
+ggsave("global_niche_vs_local_cooccurrence_scales_facet_Quantile.png", plot = fig_quantile, width = 7, height = 5, units = "in", dpi = 600)
+
+```
+
+
+
+
+
+
+
+
+<!-- # ¿El nicho global predice la coocurrencia local? - Modelo lineal -->
+
+<!-- Variable respuesta: observed_local  -->
+<!-- Predictor: expected_global -->
+<!-- Interacción: expected_global * scale --> es lo mimso que expected_global + scale + expected_global:scale -->
+
+
+<!-- expected_global -> ¿el nicho predice coexistencia? -->
+<!-- scale->	¿la coexistencia cambia con escala? -->
+<!-- expected_global:scale	-> ¿la fuerza predictiva cambia con escala? -->
+
+<!-- observed_local=β0+β1(expected_global)+β2(scale)+β3(expected_global×scale)+ε -->
+
+<!-- ```{r} -->
+<!-- lm( -->
+<!--   observed_local ~ expected_global * scale, -->
+<!--   data = all_pairs -->
+<!-- ) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- summary( -->
+<!--   lm( -->
+<!--     observed_local ~ expected_global * scale, -->
+<!--     data = all_pairs -->
+<!--   ) -->
+<!-- ) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- colors <- c( -->
+<!--   "5m"   = "#80cdc1", -->
+<!--   "40m"  = "#a6cee3", -->
+<!--   "400m" = "#ba8bc9ff" -->
+<!-- ) -->
+
+
+<!-- all_pairs$scale <- factor( -->
+<!--   all_pairs$scale, -->
+<!--   levels = c("5m", "40m", "400m") -->
+<!-- ) -->
+
+<!-- p <- ggplot( -->
+<!--   all_pairs, -->
+<!--   aes( -->
+<!--     x = expected_global, -->
+<!--     y = observed_local, -->
+<!--     color = scale -->
+<!--   ) -->
+<!-- ) + -->
+<!--   geom_point( -->
+<!--     alpha = 0.18, -->
+<!--     size = 0.9 -->
+<!--   ) + -->
+<!--   geom_smooth( -->
+<!--     method = "lm", -->
+<!--     se = FALSE, -->
+<!--     linewidth = 1.3 -->
+<!--   ) + -->
+<!--   scale_color_manual(values = colors) + -->
+<!--   facet_wrap( -->
+<!--     ~ scale, -->
+<!--     nrow = 1, -->
+<!--     labeller = as_labeller(c( -->
+<!--       "5m" = "5 m", -->
+<!--       "40m" = "40 m", -->
+<!--       "400m" = "400 m" -->
+<!--     )) -->
+<!--   ) + -->
+<!--   coord_cartesian( -->
+<!--     xlim = c(0, 0.8), -->
+<!--     ylim = c(0, 0.55) -->
+<!--   ) + -->
+<!--   labs( -->
+<!--     x = "Expected co-occurrence from global niche overlap", -->
+<!--     y = "Observed local co-occurrence" -->
+<!--   ) + -->
+<!--   theme_classic(base_size = 14) + -->
+<!--   theme( -->
+<!--     legend.position = "none", -->
+<!--     strip.background = element_blank(), -->
+<!--     strip.text = element_text(size = 13, face = "bold"), -->
+<!--     axis.title = element_text(size = 14, face = "bold"), -->
+<!--     axis.text = element_text(size = 11) -->
+<!--   ) -->
+
+<!-- p -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- ggsave("global_niche_vs_local_cooccurrence_scales_facet.png", plot = p, width = 7, height = 5, units = "in", dpi = 600) -->
+<!-- ``` -->
+
+
+
+
+
+
+
+
+
+
+
+# ANALIZAR RESIDUOS
+
+```{r}
+ggplot(all_pairs,
+       aes(x = residual,
+           fill = scale)) +
+  geom_density(alpha = 0.4)
+```
+
+```{r}
+# colors <- c(
+#   "5m"   = "#80cdc1",
+#   "40m"  = "#1f78b4",
+#   "400m" = "#540046"
+# )
+
+colors <- c(
+  "5m"   = "#80cdc1",
+  "40m"  = "#a6cee3",
+  "400m" = "#ba8bc9ff"
+)
+
+all_pairs$scale <- factor(
+  all_pairs$scale,
+  levels = c("5m", "40m", "400m")
+)
+
+residual_boxplot <- ggplot(
+  all_pairs,
+  aes(
+    x = scale,
+    y = residual,
+    fill = scale
+  )
+) +
+
+  geom_violin(
+    trim = TRUE,
+    alpha = 0.35,
+    color = NA,
+    scale = "width"
+  ) +
+
+  geom_boxplot(
+    width = 0.12,
+    color = "black",
+    outlier.shape = NA,
+    linewidth = 0.6
+  ) +
+
+  geom_hline(
+    yintercept = 0,
+    linetype = "dashed",
+    linewidth = 0.7,
+    color = "grey40"
+  ) +
+
+  scale_fill_manual(values = colors) +
+
+  labs(
+    y = "Residual local co-occurrence",
+    x = "Spatial scale"
+  ) +
+
+  theme_minimal(base_size = 14) +
+
+  theme(
+    legend.position = "none",
+    axis.title.y = element_text(size = 14, face = "bold"),
+    axis.title.x = element_text(size = 14, face = "bold"),
+    axis.text = element_text(size = 12),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank()
+  )
+
+residual_boxplot
+```
+
+```{r}
+ggsave("residual_boxplot.png", plot = residual_boxplot, width = 7, height = 5, units = "in", dpi = 600)
+```
+
+
+```{r}
+all_pairs %>%
+  group_by(scale) %>%
+  summarise(
+    mean_residual = mean(residual),
+    sd_residual = sd(residual),
+    median_residual = median(residual)
+  )
+```
+
+### comparar variance
+
+
+```{r}
+# comparar variance
+
+kruskal.test(residual ~ scale,
+             data = all_pairs)
+```
+
+### porcentaje residuals extremos
+
+```{r}
+all_pairs %>%
+  mutate(
+    category = case_when(
+      residual > 0.05 ~ "Higher than expected",
+      residual < -0.05 ~ "Lower than expected",
+      TRUE ~ "As expected"
+    )
+  ) %>%
+  group_by(scale, category) %>%
+  summarise(n = n()) %>%
+  mutate(percent = 100 * n / sum(n))
+```
+

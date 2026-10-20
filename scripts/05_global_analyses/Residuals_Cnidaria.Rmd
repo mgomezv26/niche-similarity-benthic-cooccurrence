@@ -1,0 +1,377 @@
+---
+title: "Phylogenetic effects on species co-occurrence after accounting for environmental niche similarity - Cnidaria"
+author: "Mónica Gómez-Vadillo"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    theme: flatly
+    highlight: tango
+  pdf_document:
+    latex_engine: xelatex
+    toc: true
+    toc_depth: 2
+  word_document:
+    toc: true
+    toc_depth: '2'
+lang: es
+---
+
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+
+# LOAD PAKAGES
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(readxl)
+library(dplyr)
+library(vegan)
+library(patchwork)
+```
+
+```{r}
+local = "__CONFIGURE_PATH_01__"
+phylo_dir = paste0(local, "/10_Phylo/02_Cnidaria_COI")
+save_path=paste0(local,"/05_Results_Mantel_Test")
+save_path_matrix = paste0(local,"/05_Results_Mantel_Test/01_Matrix")
+
+```
+
+
+# Leer species_order exportado previamente
+
+```{r}
+species_order <- read.csv(
+  file.path(save_path, "species_order.csv"),
+  stringsAsFactors = FALSE
+)[[1]]
+```
+
+# Leer tabla con species + phylum
+
+```{r}
+species_hv_names_tax_Cnidaria <- read_excel("03_Hypervolumes/06_Hipervolume_results/species_hv_names_tax.xlsx", 
+    sheet = "Cnidaria")
+head(species_hv_names_tax_Cnidaria)
+```
+
+# Leer residuos
+
+```{r}
+resid_schoener <- readRDS(file.path(save_path, "mantel_residuals_schoener.rds"))
+resid_jaccard <- readRDS(file.path(save_path, "/mantel_residuals_jaccard.rds"))
+```
+
+# Convertir residuos a matriz
+
+```{r}
+resid_mat <- as.matrix(resid_schoener$residuals)
+head(resid_mat)
+
+#asignar species_order
+rownames(resid_mat) <- species_order
+colnames(resid_mat) <- species_order
+
+resid_mat <- (resid_mat + t(resid_mat)) / 2
+diag(resid_mat) <- 0
+```
+
+# CNIDARIA
+
+## Leer df largo de matriz genética Porifera
+
+```{r}
+genetic_long <- read_excel(
+  file.path(phylo_dir, "Cnidaria_Distance_Matrix_COI_MEGA.xlsx"),
+  sheet = "MatrixOutput"
+)
+
+head(genetic_long)
+names(genetic_long)
+```
+## Preparar tabla código COI -> especie
+
+```{r}
+norm <- function(x) enc2utf8(trimws(gsub("\\s+", " ", x)))
+
+coi_map <- species_hv_names_tax_Cnidaria %>%
+  filter(COI == "Yes", !is.na(COI_ID)) %>%
+  mutate(
+    species = norm(species),
+    COI_ID = norm(COI_ID),
+    COI_ID_dot = paste0(COI_ID, ".1")
+  ) %>%
+  select(species, COI_ID, COI_ID_dot)
+
+coi_map
+```
+
+
+## Limpiar matriz genética larga
+
+```{r}
+genetic_long_clean <- genetic_long %>%
+  rename(
+    code1 = `Species 1`,
+    code2 = `Species 2`,
+    genetic_dist = Dist
+  ) %>%
+  mutate(
+    code1 = norm(code1),
+    code2 = norm(code2)
+  ) %>%
+  left_join(coi_map, by = c("code1" = "COI_ID")) %>%
+  rename(sp1 = species) %>%
+  left_join(coi_map, by = c("code2" = "COI_ID")) %>%
+  rename(sp2 = species) %>%
+  select(sp1, sp2, genetic_dist)
+```
+
+```{r}
+genetic_long_clean %>%
+  filter(is.na(sp1) | is.na(sp2))
+```
+
+```{r}
+length(unique(genetic_long_clean$sp1))
+length(unique(genetic_long_clean$sp2))
+```
+
+```{r}
+length(unique(c(genetic_long_clean$sp1, genetic_long_clean$sp2)))
+
+sort(unique(c(genetic_long_clean$sp1, genetic_long_clean$sp2)))
+```
+
+## Crear matriz genética simétrica
+
+```{r}
+gen_species <- sort(unique(c(genetic_long_clean$sp1, genetic_long_clean$sp2)))
+
+gen_mat <- matrix(
+  0,
+  nrow = length(gen_species),
+  ncol = length(gen_species),
+  dimnames = list(gen_species, gen_species)
+)
+
+for(i in seq_len(nrow(genetic_long_clean))) {
+  s1 <- genetic_long_clean$sp1[i]
+  s2 <- genetic_long_clean$sp2[i]
+  d  <- genetic_long_clean$genetic_dist[i]
+  
+  gen_mat[s1, s2] <- d
+  gen_mat[s2, s1] <- d
+}
+
+diag(gen_mat) <- 0
+
+gen_mat[1:5, 1:5]
+```
+
+## Convertir residuos a matriz con nombres
+
+```{r}
+make_resid_mat <- function(resid_obj, species_order) {
+  mat <- as.matrix(resid_obj$residuals)
+  rownames(mat) <- species_order
+  colnames(mat) <- species_order
+  mat <- (mat + t(mat)) / 2
+  diag(mat) <- 0
+  mat
+}
+```
+
+## Crear matrices de residuos con nombres
+
+```{r}
+resid_schoener_mat <- make_resid_mat(resid_schoener, species_order)
+resid_jaccard_mat  <- make_resid_mat(resid_jaccard, species_order)
+
+head(resid_schoener_mat)
+```
+
+## Alinear residuos con especies Porifera con COI
+
+```{r}
+species_common_schoener <- Reduce(intersect, list(
+  rownames(resid_schoener_mat),
+  rownames(gen_mat),
+  colnames(gen_mat)
+))
+
+species_common_jaccard <- Reduce(intersect, list(
+  rownames(resid_jaccard_mat),
+  rownames(gen_mat),
+  colnames(gen_mat)
+))
+
+length(species_common_schoener)
+species_common_schoener
+```
+
+
+## Subset final
+
+```{r}
+resid_schoener_pori <- resid_schoener_mat[species_common_schoener, species_common_schoener]
+resid_jaccard_pori  <- resid_jaccard_mat[species_common_jaccard, species_common_jaccard]
+
+gen_pori_schoener <- gen_mat[species_common_schoener, species_common_schoener]
+gen_pori_jaccard  <- gen_mat[species_common_jaccard, species_common_jaccard]
+```
+
+
+## Mantel: residuos vs distancia genética
+
+```{r}
+mantel_resid_gen_schoener <- mantel(
+  as.dist(resid_schoener_pori),
+  as.dist(gen_pori_schoener),
+  permutations = 999,
+  method = "pearson"
+)
+
+mantel_resid_gen_jaccard <- mantel(
+  as.dist(resid_jaccard_pori),
+  as.dist(gen_pori_jaccard),
+  permutations = 999,
+  method = "pearson"
+)
+
+mantel_resid_gen_schoener
+mantel_resid_gen_jaccard
+```
+
+
+## Guardar matrices y resultados
+
+```{r}
+saveRDS(gen_mat, file.path(phylo_dir, "Cnidaria_COI_genetic_distance_matrix_species_names.rds"))
+saveRDS(resid_schoener_pori, file.path(save_path, "resid_schoener_cnidaria_COI.rds"))
+saveRDS(resid_jaccard_pori, file.path(save_path, "resid_jaccard_cnidaria_COI.rds"))
+
+write.csv(gen_mat, file.path(phylo_dir, "Cnidaria_COI_genetic_distance_matrix_species_names.csv"))
+
+mantel_summary <- tibble(
+  metric = c("Schoener residuals", "Jaccard residuals"),
+  mantel_r = c(
+    unname(mantel_resid_gen_schoener$statistic),
+    unname(mantel_resid_gen_jaccard$statistic)
+  ),
+  p_value = c(
+    mantel_resid_gen_schoener$signif,
+    mantel_resid_gen_jaccard$signif
+  ),
+  n_species = c(
+    length(species_common_schoener),
+    length(species_common_jaccard)
+  )
+)
+
+write.csv(
+  mantel_summary,
+  file.path(save_path, "mantel_residuals_vs_COI_genetic_distance_Cnidaria.csv"),
+  row.names = FALSE
+)
+
+mantel_summary
+```
+
+
+## PLOTS
+
+```{r}
+# preparar datos (solo triángulo superior)
+get_upper <- function(mat) mat[upper.tri(mat)]
+
+df_plot_schoener <- data.frame(
+  schoener_resid = get_upper(resid_schoener_pori),
+  genetic = get_upper(gen_pori_schoener)
+)
+
+plot_phylo_schoener <- ggplot(df_plot_schoener, aes(x = genetic, y = schoener_resid)) +
+  geom_point(alpha = 0.8, size = 2, shape = 16, color = "#80cdc1") +
+  geom_smooth(method = "lm", se = TRUE,
+            color = "#018571",
+            fill = "grey80",   # ← cambia el gris
+            alpha = 0.4,
+            linewidth = 1)+
+  labs(
+    title = "Phylogenetic effects on residual co-occurrence (Schoener)",
+    x = "Genetic distance (COI)",
+    y = "Residual co-occurrence (Schoener)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5),
+    axis.title = element_text(face = "bold")
+  )
+
+plot_phylo_schoener
+```
+
+```{R}
+ggsave(
+  file.path(local, "06_Figures/plot_phylo_residuals_schoener_Cnidaria.png"),
+  plot = plot_phylo_schoener,
+  width = 10, height = 5, units = "in", dpi = 600
+)
+```
+
+```{r}
+df_plot_jaccard <- data.frame(
+  jaccard_resid = get_upper(resid_jaccard_pori),
+  genetic = get_upper(gen_pori_jaccard)
+)
+
+plot_phylo_jaccard <- ggplot(df_plot_jaccard, aes(x = genetic, y = jaccard_resid)) +
+  geom_point(alpha = 0.8, size = 2, shape = 16, color = "#a6cee3") +
+  geom_smooth(method = "lm", se = TRUE,
+            color = "#1f78b4",
+            fill = "grey80",   # ← cambia el gris
+            alpha = 0.4,
+            linewidth = 1) +
+  labs(
+    title = "Phylogenetic effects on residual co-occurrence (Jaccard)",
+    x = "Genetic distance (COI)",
+    y = "Residual co-occurrence (Jaccard)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5),
+    axis.title = element_text(face = "bold")
+  )
+
+plot_phylo_jaccard
+```
+
+```{r}
+ggsave(
+  file.path(local, "06_Figures/plot_phylo_residuals_jaccard_Cnidaria.png"),
+  plot = plot_phylo_jaccard,
+  width = 10, height = 5, units = "in", dpi = 600
+)
+```
+
+```{r}
+combined_plot <- ( plot_phylo_jaccard | plot_phylo_schoener)
+
+combined_plot
+```
+
+```{r}
+ggsave(
+  file.path(local, "06_Figures/plot_phylo_residuals_combined_plot_Cnidaria.png"),
+  plot = combined_plot,
+  width = 10, height = 5, units = "in", dpi = 600
+)
+```
+
+
+
+

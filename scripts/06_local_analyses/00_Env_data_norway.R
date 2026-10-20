@@ -1,0 +1,853 @@
+
+library(dplyr)
+library(readr)
+library(terra)
+library(tibble)
+
+#local <- "__CONFIGURE_PATH_01__"
+local = "__CONFIGURE_PATH_02__"
+
+env_dir <- paste0(local, "/data/EnvironmentalData")
+data_dir_5m <- paste0(local, "/data/5m")
+data_dir_40m <- paste0(local, "/data/40m")
+data_dir_400m <- paste0(local, "/data/400m")
+mean_prob_dir  <- paste0(local, "/01_outputs/local_residuals")
+
+
+
+# ============================================================
+# OCEANOGRAPHIC VARIABLES
+# ============================================================
+
+env <- rast(paste0(env_dir, "/env_full-001.tif"))
+
+env_sel <- env[[c(
+  "bathy200_sed",
+  "mud",
+  "sand",
+  "gravel",
+  "rock",
+  "temp_mean",
+  "salt_mean",
+  "spd_mean",
+  "Dissolved.oxygen.Mean",
+  "Chlorophyll.Mean",
+  "qslope9",
+  "wbtgm_i2o8f1"
+)]]
+
+# ============================================================
+# 2. MEAN EXPECTED CO-OCURRENCE PROBABILITY DATA
+# ============================================================
+
+mean_prob_df <- read_csv(paste0(mean_prob_dir, "/community_expected_cooccurrence_probability_all_filt.csv"))
+
+mean_prob_5m <- mean_prob_df%>% filter(scale=="5m")
+mean_prob_40m <- mean_prob_df%>% filter(scale=="40m")
+mean_prob_400m <- mean_prob_df%>% filter(scale=="400m")
+
+mean_prob_df
+
+summary(mean_expected_prob ~ scale)
+
+# ============================================================
+# 3. 5M 
+# ============================================================
+
+sample_5m <- read_csv(paste0(data_dir_5m, "/sample_info_5m_ready.csv"))
+
+coords_5m <- sample_5m %>%
+  rename(
+    SampID = ID_5,
+    X = X_5m,
+    Y = Y_5m
+  ) %>%
+  semi_join(
+    mean_prob_5m,
+    by = "SampID"
+  ) %>%
+  select(SampID, X, Y)
+
+# extraer datos del raster
+env_5m <- terra::extract(
+  env_sel,
+  coords_5m[, c("X","Y")]
+)
+
+env_5m <- bind_cols(
+  coords_5m,
+  env_5m[, -1]
+)
+head(env_5m)
+
+# Unir variables oceanograficas + la probabilidad media
+mean_prob_5m_env <- mean_prob_5m %>%
+  left_join(env_5m, by = "SampID")
+
+nrow(mean_prob_5m)
+nrow(mean_prob_5m_env)
+
+colSums(is.na(mean_prob_5m_env))
+
+# ver valores nulos, si estan en las mismas columnas
+mean_prob_5m_env %>%
+  summarise(across(
+    c(bathy200_sed, mud, sand, gravel, rock,
+      temp_mean, salt_mean, spd_mean,
+      Dissolved.oxygen.Mean,
+      Chlorophyll.Mean,
+      qslope9, wbtgm_i2o8f1),
+    ~ sum(is.na(.))
+  ))
+
+sum(!complete.cases(
+  mean_prob_5m_env[, c(
+    "bathy200_sed",
+    "mud",
+    "sand",
+    "gravel",
+    "rock",
+    "temp_mean",
+    "salt_mean",
+    "spd_mean",
+    "Dissolved.oxygen.Mean",
+    "Chlorophyll.Mean",
+    "qslope9",
+    "wbtgm_i2o8f1"
+  )]
+))
+
+
+mean_prob_5m_env_filt <- mean_prob_5m_env %>%
+  filter(
+    complete.cases(
+      bathy200_sed,
+      mud,
+      sand,
+      gravel,
+      rock,
+      temp_mean,
+      salt_mean,
+      spd_mean,
+      Dissolved.oxygen.Mean,
+      Chlorophyll.Mean,
+      qslope9,
+      wbtgm_i2o8f1
+    )
+  )
+
+head(mean_prob_5m_env_filt)
+
+summary(mean_prob_5m_env_filt$mean_expected_prob)
+
+hist(mean_prob_5m_env_filt$mean_expected_prob,
+     breaks = 50)
+
+# ============================================================
+# 4. 40 M 
+# ============================================================
+
+sample_40m <- read_csv(paste0(data_dir_40m, "/sample_info_40m_ready.csv"))
+
+coords_40m <- sample_40m %>%
+  rename(
+    SampID = ID_40,
+    X = X_40m,
+    Y = Y_40m
+  ) %>%
+  semi_join(
+    mean_prob_40m,
+    by = "SampID"
+  ) %>%
+  select(SampID, X, Y)
+
+# extraer datos del raster
+env_40m <- terra::extract(
+  env_sel,
+  coords_40m[, c("X","Y")]
+)
+
+env_40m <- bind_cols(
+  coords_40m,
+  env_40m[, -1]
+)
+head(env_40m)
+
+# Unir variables oceanograficas + la probabilidad media
+mean_prob_40m_env <- mean_prob_40m %>%
+  left_join(env_40m, by = "SampID")
+
+nrow(mean_prob_40m)
+nrow(mean_prob_40m_env)
+
+colSums(is.na(mean_prob_40m_env))
+
+# ver valores nulos, si estan en las mismas columnas
+mean_prob_40m_env %>%
+  summarise(across(
+    c(bathy200_sed, mud, sand, gravel, rock,
+      temp_mean, salt_mean, spd_mean,
+      Dissolved.oxygen.Mean,
+      Chlorophyll.Mean,
+      qslope9, wbtgm_i2o8f1),
+    ~ sum(is.na(.))
+  ))
+
+sum(!complete.cases(
+  mean_prob_40m_env[, c(
+    "bathy200_sed",
+    "mud",
+    "sand",
+    "gravel",
+    "rock",
+    "temp_mean",
+    "salt_mean",
+    "spd_mean",
+    "Dissolved.oxygen.Mean",
+    "Chlorophyll.Mean",
+    "qslope9",
+    "wbtgm_i2o8f1"
+  )]
+))
+
+
+mean_prob_40m_env_filt <- mean_prob_40m_env %>%
+  filter(
+    complete.cases(
+      bathy200_sed,
+      mud,
+      sand,
+      gravel,
+      rock,
+      temp_mean,
+      salt_mean,
+      spd_mean,
+      Dissolved.oxygen.Mean,
+      Chlorophyll.Mean,
+      qslope9,
+      wbtgm_i2o8f1
+    )
+  )
+
+head(mean_prob_40m_env_filt)
+
+summary(mean_prob_40m_env_filt$mean_expected_prob)
+
+hist(mean_prob_40m_env_filt$mean_expected_prob,
+     breaks = 50)
+
+
+# ============================================================
+# 5. 400 M 
+# ============================================================
+
+sample_400m <- read_csv(paste0(data_dir_400m, "/sample_info.csv"))
+
+coords_400m <- sample_400m %>%
+  rename(
+    SampID = ID_400,
+    X = X_400m,
+    Y = Y_400m
+  ) %>%
+  semi_join(
+    mean_prob_400m,
+    by = "SampID"
+  ) %>%
+  select(SampID, X, Y)
+
+# extraer datos del raster
+env_400m <- terra::extract(
+  env_sel,
+  coords_400m[, c("X","Y")]
+)
+
+env_400m <- bind_cols(
+  coords_400m,
+  env_400m[, -1]
+)
+head(env_400m)
+
+# Unir variables oceanograficas + la probabilidad media
+mean_prob_400m_env <- mean_prob_400m %>%
+  left_join(env_400m, by = "SampID")
+
+nrow(mean_prob_400m)
+nrow(mean_prob_400m_env)
+
+colSums(is.na(mean_prob_400m_env))
+
+# ver valores nulos, si estan en las mismas columnas
+mean_prob_400m_env %>%
+  summarise(across(
+    c(bathy200_sed, mud, sand, gravel, rock,
+      temp_mean, salt_mean, spd_mean,
+      Dissolved.oxygen.Mean,
+      Chlorophyll.Mean,
+      qslope9, wbtgm_i2o8f1),
+    ~ sum(is.na(.))
+  ))
+
+sum(!complete.cases(
+  mean_prob_400m_env[, c(
+    "bathy200_sed",
+    "mud",
+    "sand",
+    "gravel",
+    "rock",
+    "temp_mean",
+    "salt_mean",
+    "spd_mean",
+    "Dissolved.oxygen.Mean",
+    "Chlorophyll.Mean",
+    "qslope9",
+    "wbtgm_i2o8f1"
+  )]
+))
+
+
+mean_prob_400m_env_filt <- mean_prob_400m_env %>%
+  filter(
+    complete.cases(
+      bathy200_sed,
+      mud,
+      sand,
+      gravel,
+      rock,
+      temp_mean,
+      salt_mean,
+      spd_mean,
+      Dissolved.oxygen.Mean,
+      Chlorophyll.Mean,
+      qslope9,
+      wbtgm_i2o8f1
+    )
+  )
+
+head(mean_prob_400m_env_filt)
+
+summary(mean_prob_400m_env_filt$mean_expected_prob)
+
+hist(mean_prob_400m_env_filt$mean_expected_prob,
+     breaks = 50)
+
+
+# ============================================================
+# 5. COMBINE ALL 
+# ============================================================
+
+
+mean_prob_all <- bind_rows(
+  mean_prob_5m_env_filt,
+  mean_prob_40m_env_filt,
+  mean_prob_400m_env_filt
+)
+
+kruskal.test(
+  mean_expected_prob ~ scale,
+  data = mean_prob_all
+)
+
+# ============================================================
+# 6. MATRIZ CORRELACION ENTRE VARIABLES
+# ============================================================
+
+env_vars_all <- mean_prob_all %>%
+  select(
+    bathy200_sed, mud, sand, gravel, rock,
+    temp_mean, salt_mean, spd_mean,
+    Dissolved.oxygen.Mean, Chlorophyll.Mean,
+    qslope9, wbtgm_i2o8f1
+  )
+
+cor_all <- cor(env_vars_all, use = "pairwise.complete.obs")
+
+round(cor_all, 2)
+
+write.csv(cor_all, paste0(env_dir, "cor_vars_sel.csv"))
+
+library(corrplot)
+
+
+colnames(cor_all) <- c(
+  "Bathymetry",
+  "Mud",
+  "Sand",
+  "Gravel",
+  "Rock",
+  "Temperature",
+  "Salinity",
+  "Current velocity",
+  "Dissolved oxygen",
+  "Chlorophyll",
+  "Slope",
+  "Seafloor roughness"
+)
+
+rownames(cor_all) <- colnames(cor_all)
+
+plot <- corrplot(
+  cor_all,
+  method = "circle",
+  col = colorRampPalette(
+    c("#BCE7E1", "white", "#8db9e2")
+  )(200),
+  type = "upper",
+  order = "hclust",
+  tl.col = "black",
+  tl.cex = 1.1,
+  tl.srt = 45,
+  addCoef.col = "black",
+  number.cex = 0.6,
+  diag = FALSE
+)
+
+plot
+
+
+# VIF
+
+library(car)
+
+lm_full_all <- lm(
+  mean_expected_prob ~
+    bathy200_sed +
+    mud +
+    sand +
+    gravel +
+    rock +
+    temp_mean +
+    salt_mean +
+    spd_mean +
+    Dissolved.oxygen.Mean +
+    Chlorophyll.Mean +
+    qslope9 +
+    wbtgm_i2o8f1,
+  data = mean_prob_all
+)
+
+vif_values <- vif(lm_full_all)
+
+sort(vif_values, decreasing = TRUE)
+
+
+# temp_mean Dissolved.oxygen.Mean                   mud                gravel      Chlorophyll.Mean                  sand 
+# 9.487076              8.831468              4.751870              3.645434              3.583128              3.283035 
+# rock             salt_mean          bathy200_sed               qslope9          wbtgm_i2o8f1              spd_mean 
+# 2.548505              2.301888              2.160184              1.665666              1.421776              1.384028 
+
+
+
+# ============================================================
+# 7. MODELOS CON VARIABLES ESTANDARIZADAS
+# ============================================================
+
+library(dplyr)
+library(ggplot2)
+library(broom)
+library(car)
+
+mean_prob_all_mod <- mean_prob_all %>%
+  rename(
+    Bathymetry = bathy200_sed,
+    Mud = mud,
+    Sand = sand,
+    Gravel = gravel,
+    Rock = rock,
+    Temperature = temp_mean,
+    Salinity = salt_mean,
+    Current_speed = spd_mean,
+    Chlorophyll = Chlorophyll.Mean,
+    Slope = qslope9,
+    Seafloor_roughness = wbtgm_i2o8f1
+  )
+
+vars_model <- c(
+  "Bathymetry",
+  "Mud",
+  "Sand",
+  "Gravel",
+  "Rock",
+  "Temperature",
+  "Salinity",
+  "Current_speed",
+  "Chlorophyll",
+  "Slope",
+  "Seafloor_roughness"
+)
+
+
+# Estandarizar predictores
+mean_prob_all_std <- mean_prob_all_mod %>%
+  mutate(
+    across(
+      all_of(vars_model),
+      ~ as.numeric(scale(.x))
+    )
+  )
+
+formula_local_std <- mean_expected_prob ~
+  Bathymetry +
+  Mud +
+  Sand +
+  Gravel +
+  Rock +
+  Temperature +
+  Salinity +
+  Current_speed +
+  Chlorophyll +
+  Slope +
+  Seafloor_roughness
+
+# Modelo conjunto para comprobar VIF
+lm_all_std <- lm(
+  formula_local_std,
+  data = mean_prob_all_std
+)
+
+car::vif(lm_all_std)
+
+# Modelos por escala
+lm_5m_std <- lm(formula_local_std,
+                data = filter(mean_prob_all_std, scale == "5m"))
+
+lm_40m_std <- lm(formula_local_std,
+                 data = filter(mean_prob_all_std, scale == "40m"))
+
+lm_400m_std <- lm(formula_local_std,
+                  data = filter(mean_prob_all_std, scale == "400m"))
+
+summary(lm_5m_std)
+summary(lm_40m_std)
+summary(lm_400m_std)
+
+
+
+# ============================================================
+# 8. Tabla resumen de modelos
+# ============================================================
+
+model_summary <- data.frame(
+  scale = c("5 m", "40 m", "400 m"),
+  n_communities = c(
+    nrow(filter(mean_prob_all_std, scale == "5m")),
+    nrow(filter(mean_prob_all_std, scale == "40m")),
+    nrow(filter(mean_prob_all_std, scale == "400m"))
+  ),
+  R2 = c(
+    summary(lm_5m_std)$r.squared,
+    summary(lm_40m_std)$r.squared,
+    summary(lm_400m_std)$r.squared
+  ),
+  adj_R2 = c(
+    summary(lm_5m_std)$adj.r.squared,
+    summary(lm_40m_std)$adj.r.squared,
+    summary(lm_400m_std)$adj.r.squared
+  )
+)
+
+model_summary
+write.csv(model_summary,
+          "model_summary_local_environment_scaled.csv",
+          row.names = FALSE)
+
+
+
+# ============================================================
+# 9. Figura principal tipo Ecography: coeficientes estandarizados
+# ============================================================
+library(broom)
+library(ggplot2)
+library(dplyr)
+
+# ============================================================
+# Extraer coeficientes de los 3 modelos
+# ============================================================
+
+coef_df <- bind_rows(
+  broom::tidy(lm_5m_std, conf.int = TRUE) %>%
+    mutate(scale = "5 m"),
+  
+  broom::tidy(lm_40m_std, conf.int = TRUE) %>%
+    mutate(scale = "40 m"),
+  
+  broom::tidy(lm_400m_std, conf.int = TRUE) %>%
+    mutate(scale = "400 m")
+) %>%
+  filter(term != "(Intercept)")
+
+# ============================================================
+# Renombrar variables
+# ============================================================
+
+coef_df$term <- factor(
+  coef_df$term,
+  levels = c(
+    "Bathymetry",
+    "Mud",
+    "Sand",
+    "Gravel",
+    "Rock",
+    "Temperature",
+    "Salinity",
+    "Current_speed",
+    "Chlorophyll",
+    "Slope",
+    "Seafloor_roughness"
+  ),
+  labels = c(
+    "Bathymetry",
+    "Mud",
+    "Sand",
+    "Gravel",
+    "Rock",
+    "Temperature",
+    "Salinity",
+    "Current speed",
+    "Chlorophyll",
+    "Slope",
+    "Seafloor roughness"
+  )
+)
+
+coef_df$scale <- factor(
+  coef_df$scale,
+  levels = c("5 m", "40 m", "400 m")
+)
+
+# ============================================================
+# Colores del artículo
+# ============================================================
+
+colors <- c(
+  "5 m"   = "#80cdc1",
+  "40 m"  = "#a6cee3",
+  "400 m" = "#ba8bc9"
+)
+
+# ============================================================
+# Figura tipo Ecography
+# ============================================================
+
+coef_plot <- ggplot(
+  coef_df,
+  aes(
+    x = estimate,
+    y = term,
+    colour = scale
+  )
+) +
+  
+  geom_vline(
+    xintercept = 0,
+    linetype = "dashed",
+    colour = "grey50",
+    linewidth = 0.5
+  ) +
+  
+  geom_errorbarh(
+    aes(
+      xmin = conf.low,
+      xmax = conf.high
+    ),
+    position = position_dodge(width = 0.7),
+    height = 0.2,
+    linewidth = 0.7
+  ) +
+  
+  geom_point(
+    position = position_dodge(width = 0.7),
+    size = 3
+  ) +
+  
+  scale_colour_manual(values = colors) +
+  
+  labs(
+    x = "Standardized coefficient",
+    y = NULL,
+    colour = "Scale"
+  ) +
+  
+  theme_classic(base_size = 13) +
+  
+  theme(
+    legend.position = "top",
+    axis.text.y = element_text(size = 11),
+    axis.text.x = element_text(size = 11),
+    axis.title.x = element_text(size = 14, face = "bold"),
+    legend.title = element_text(size = 11),
+    legend.text = element_text(size = 10)
+  )
+
+coef_plot
+
+
+
+ggsave(
+  "Environmental_effects_coefplot.pdf",
+  coef_plot,
+  width = 8,
+  height = 6
+)
+
+ggsave(
+  "Environmental_effects_coefplot.png",
+  coef_plot,
+  width = 8,
+  height = 6,
+  dpi = 600
+)
+
+
+summary(lm_5m_std)
+summary(lm_40m_std)
+summary(lm_400m_std)
+
+# ============================================================
+# 10. MODEL SELECTION (AIC)
+# ============================================================
+
+library(MuMIn)
+
+options(na.action = "na.fail")
+
+#---------------------------------------------
+# Scale 5 m ----------------------------------
+#---------------------------------------------
+
+data_5m_std <- mean_prob_all_std %>%
+  filter(scale == "5m")
+
+lm_5m_std <- lm(
+  formula_local_std,
+  data = data_5m_std
+)
+
+dd_5m <- dredge(lm_5m_std)
+
+head(dd_5m)
+
+subset(dd_5m, delta < 2)
+
+sw(dd_5m)
+
+#---------------------------------------------
+# Scale 40 m ---------------------------------
+#---------------------------------------------
+
+data_40m_std <- mean_prob_all_std %>%
+  filter(scale == "40m")
+
+lm_40m_std <- lm(
+  formula_local_std,
+  data = data_40m_std
+)
+
+dd_40m <- dredge(lm_40m_std)
+
+subset(dd_40m, delta < 2)
+sw(dd_40m)
+
+#---------------------------------------------
+# Scale 400 m --------------------------------
+#---------------------------------------------
+
+data_400m_std <- mean_prob_all_std %>%
+  filter(scale == "400m")
+
+lm_400m_std <- lm(
+  formula_local_std,
+  data = data_400m_std
+)
+
+dd_400m <- dredge(lm_400m_std)
+
+subset(dd_400m, delta < 2)
+sw(dd_400m)
+
+#---------------------------------------------
+# Importance  --------------------------------
+#---------------------------------------------
+imp_5m <- sw(dd_5m)
+imp_40m <- sw(dd_40m)
+imp_400m <- sw(dd_400m)
+
+imp_df <- data.frame(
+  Variable = names(imp_5m),
+  Importance_5m = as.numeric(imp_5m),
+  Importance_40m = as.numeric(imp_40m[names(imp_5m)]),
+  Importance_400m = as.numeric(imp_400m[names(imp_5m)])
+)
+
+imp_df
+
+
+
+
+
+
+#--------------------------------
+
+
+imp_5m <- sw(dd_5m)
+imp_40m <- sw(dd_40m)
+imp_400m <- sw(dd_400m)
+
+all_vars <- unique(c(
+  names(imp_5m),
+  names(imp_40m),
+  names(imp_400m)
+))
+
+imp_df <- data.frame(
+  Variable = all_vars,
+  `5 m` = as.numeric(imp_5m[all_vars]),
+  `40 m` = as.numeric(imp_40m[all_vars]),
+  `400 m` = as.numeric(imp_400m[all_vars])
+)
+
+imp_df[is.na(imp_df)] <- 0
+
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+
+imp_long <- imp_df %>%
+  pivot_longer(
+    cols = c(X5.m, X40.m, X400.m),
+    names_to = "Scale",
+    values_to = "Importance"
+  ) %>%
+  mutate(
+    Scale = dplyr::recode(
+      Scale,
+      X5.m = "5 m",
+      X40.m = "40 m",
+      X400.m = "400 m"
+    ),
+    Scale = factor(Scale, levels = c("5 m", "40 m", "400 m")),
+    Variable = gsub("_", " ", Variable)
+  )
+
+importance_plot <- ggplot(
+  imp_long,
+  aes(
+    x = Scale,
+    y = reorder(Variable, Importance),
+    fill = Importance
+  )
+) +
+  geom_tile(colour = "white") +
+  scale_fill_gradient(
+    low = "white",
+    high = "#80cdc1",
+    limits = c(0, 1)
+  ) +
+  labs(
+    x = "Spatial scale",
+    y = NULL,
+    fill = "Relative\nimportance"
+  ) +
+  theme_minimal(base_size = 12)
+
+importance_plot
+
