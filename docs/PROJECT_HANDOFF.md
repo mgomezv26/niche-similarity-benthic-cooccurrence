@@ -38,8 +38,9 @@ El [inventario](source_inventory.csv) contiene 64 fuentes de cinco raíces lógi
 | Copiados idénticos | 4 |
 | Copiados con saneamiento de configuración | 18 |
 | Históricos no copiados | 25 |
-| Exploratorios no copiados | 6 |
-| Procedencia no verificada, no copiados | 4 |
+| Exploratorios no copiados | 5 |
+| Procedencia no verificada, no copiados | 3 |
+| Excluidos definitivamente del artículo final, no copiados | 2 |
 | Función suplementaria no confirmada, no copiados | 4 |
 | Duplicados no copiados | 2 |
 | Configuración privada no copiada | 1 |
@@ -64,6 +65,7 @@ Estas decisiones son vinculantes para continuar el trabajo:
 5. **Índice comunitario:** mantener `mean_expected_prob`, media comunitaria de los valores `(residual + 1) / 2`. Es un **índice relativo entre 0 y 1 cuando está definido**, no una probabilidad calibrada. Conservar su nombre no cambia esa interpretación.
 6. **Validaciones:** mantener **B0, B1, C y D separadas**, sin sustituir los análisis originales ni incorporar automáticamente sus conclusiones al flujo principal.
 7. **Resultados y manuscrito:** no modificar el manuscrito ni los resultados científicos.
+8. **Exclusión definitiva del alcance:** `07_GitHub/17_Phylogeny.R` y `Niche_bentic_species/17_ISA.R` no forman parte del artículo científico final. Deben permanecer fuera del repositorio público, del flujo reproducible y del material suplementario; no copiarlos, adaptarlos ni ejecutarlos. Conservar sus originales intactos y sus referencias y hashes en el inventario. Esta exclusión no afecta a `Residuals_Porifera.Rmd` ni a `Residuals_Cnidaria.Rmd`: sus análisis de residuos filogenéticos sí forman parte del artículo y ambos scripts se conservan.
 
 La lectura estática de `04_Analisis_residuos_locales.R` confirma que el índice usa parejas de especies presentes por comunidad y escala, busca cada pareja en ambos órdenes, toma el primer registro coincidente y calcula la media omitiendo valores ausentes. Para comunidades con menos de dos especies devuelve `NA`. Estos detalles se documentan para preservar la implementación; no se ha probado su comportamiento con datos.
 
@@ -108,12 +110,12 @@ Derivadas de [technical_pending.md](technical_pending.md), de los README y de la
 | Definir productos externos definitivos | Manifiesto con nombre, función, DOI/versión de Figshare, licencia, tamaño, SHA256 y destino. La documentación actual no aporta un depósito configurado. |
 | Acordar entradas y salidas seguras | Rutas relativas, correspondencia de nombres entre etapas y carpeta nueva de resultados con protección contra sobrescritura. |
 | Documentar pasos manuales QGIS | Entradas y salidas con hash, versión, herramientas y parámetros, CRS, claves y tipo de unión, selección/reparación de geometrías y recuentos. |
-| Acreditar las matrices COI/MEGA finales | Productos y procedencia; no asumir que `17_Phylogeny.R` sea su generador acreditado. |
+| Acreditar las matrices COI/MEGA finales | Productos y procedencia para los análisis conservados de residuos filogenéticos de Porifera y Cnidaria. `17_Phylogeny.R` queda definitivamente excluido y no es candidato para completar esta trazabilidad. |
 | Revisar problemas exclusivamente técnicos | Carácter inicial de `11_PCA_REALM.R`, sintaxis, bibliotecas y objetos implícitos, nombres y directorios. Cualquier corrección requiere revisión separada y no habilita recalcular PCA o hipervolúmenes. |
 | Fijar entorno y versiones | Revisar `dependencies_observed.csv`; sus declaraciones y los comentarios históricos no acreditan versiones instaladas ni constituyen un archivo de bloqueo. |
 | Diseñar ejecución desde productos finales | Definir el ejecutor y sus controles sin reabrir el procesamiento científico cerrado; no afirmar reproducibilidad integral antes de verificarla. |
 | Seleccionar material de validación publicable | Decidir qué resultados e implementación de contrastes se incluirán, preservando B0, B1, C y D y sin sustituciones silenciosas. |
-| Resolver scripts de función pendiente | Confirmar papel de variantes suplementarias, taxonómicas y filogenéticas. «No copiado» no significa «científicamente innecesario». |
+| Resolver scripts de función pendiente | Confirmar papel de las restantes variantes suplementarias y taxonómicas. `17_Phylogeny.R` y `17_ISA.R` tienen exclusión definitiva confirmada y no son candidatos para incorporar; sus originales se conservan. |
 | Cerrar metadatos y correspondencia editorial | Licencia de código, permisos de datos, autores, cita y tabla salida–panel–figura/tabla del manuscrito, sin modificar este último. |
 
 ## 7. Lagunas que impiden un traspaso científico completo
