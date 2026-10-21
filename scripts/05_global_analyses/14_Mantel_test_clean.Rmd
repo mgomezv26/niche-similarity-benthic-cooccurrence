@@ -20,6 +20,7 @@ lang: es
 ---
 
 ```{r}
+safe_require_context()
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
 
@@ -40,16 +41,12 @@ library(patchwork)
 # DEFINE THE WORKING DIRECTORY
 
 ```{r}
-#local = "__CONFIGURE_PATH_01__"
-local = "__CONFIGURE_PATH_02__"
-niche_overlap_dir = paste0(local,"/03_Hypervolumes/06_Hipervolume_results")
-coocurrence_dir = paste0(local,"/04_Coocurrence")
-
-save_path=paste0(local,"/05_Results_Mantel_Test")
-save_path_matrix = paste0(local,"/05_Results_Mantel_Test/01_Matrix")
-save_path_figs = paste0(local,"/06_Figures")
-
-setwd(local)
+# Inputs are identified by inventory IDs, not approved automatically by this mapping.
+# Configure their selected paths and SHA256 explicitly before an authorised run.
+safe_require_context()
+save_path <- file.path(safe_context$run, "global")
+save_path_matrix <- file.path(save_path, "matrices")
+save_path_figs <- file.path(safe_context$run, "figures")
 
 ```
 
@@ -59,7 +56,7 @@ setwd(local)
 ## Probabilistic niche overlap (Schoener’s D based on density distributions)
 
 ```{r}
-Schoener_overlap <- read.csv(paste0(niche_overlap_dir,"/02_Shoener/schoener_D_pairs_round_1_n_100000.csv"))
+Schoener_overlap <- read.csv(safe_input("DP043"))
 head(Schoener_overlap)
 ```
 
@@ -112,10 +109,10 @@ summary(as.vector(schoener_matrix[row(schoener_matrix)!=col(schoener_matrix)]))
 
 ```{r}
 #### === Export RDS format
-saveRDS(schoener_matrix,  paste0(save_path_matrix, "/schoener_matrix.rds"))
+safe_save_rds(schoener_matrix,  paste0(save_path_matrix, "/schoener_matrix.rds"))
 
 #### === Export CSV format
-write.csv(schoener_matrix,
+safe_write_csv(schoener_matrix,
           paste0(save_path_matrix, "/schoener_matrix.csv"),
           row.names = TRUE)
 
@@ -125,7 +122,7 @@ write.csv(schoener_matrix,
 ## Geometric niche overlap (Jaccard index based on hypervolume intersections)
 
 ```{r}
-niche_overlap <- read.csv(paste0(niche_overlap_dir,"/pairwise_hypervolume_overlap_all_species.csv"))
+niche_overlap <- read.csv(safe_input("DP044"))
 head(niche_overlap)
 ```
 
@@ -183,10 +180,10 @@ summary(as.vector(niche_jaccard_matrix[row(niche_jaccard_matrix)!=col(niche_jacc
 
 ```{r}
 #### === Export RDS format
-saveRDS(niche_jaccard_matrix,  paste0(save_path_matrix, "/niche_jaccard_matrix.rds"))
+safe_save_rds(niche_jaccard_matrix,  paste0(save_path_matrix, "/niche_jaccard_matrix.rds"))
 
 #### === Export CSV format
-write.csv(niche_jaccard_matrix,
+safe_write_csv(niche_jaccard_matrix,
           paste0(save_path_matrix, "/niche_jaccard_matrix.csv"),
           row.names = TRUE)
 
@@ -236,10 +233,10 @@ summary(as.vector(niche_distance_matrix[row(niche_distance_matrix)!=col(niche_di
 
 ```{r}
 #### === Export RDS format
-saveRDS(niche_distance_matrix, paste0(save_path_matrix, "/niche_distance_matrix.rds"))
+safe_save_rds(niche_distance_matrix, paste0(save_path_matrix, "/niche_distance_matrix.rds"))
 
 #### === Export CSV format
-write.csv(niche_distance_matrix,
+safe_write_csv(niche_distance_matrix,
           paste0(save_path_matrix, "/niche_distance_matrix.csv"),
           row.names = TRUE)
 ```
@@ -251,8 +248,8 @@ write.csv(niche_distance_matrix,
 ### Co-occurrence dissimilarity matrix 
 # JACCARD DISTANCE MATRIX
 
-cooc_jac_matrix <- readRDS(paste0(coocurrence_dir,"/jaccard_distance_matrix.rds"))
-cooc_jac_df <- read.csv(paste0(coocurrence_dir,"/jaccard_distance_matrix_long_format.csv"))
+cooc_jac_matrix <- readRDS(safe_input("DP049"))
+cooc_jac_df <- read.csv(safe_input("DP050"))
 ```
 
 ```{r}
@@ -262,10 +259,10 @@ head(cooc_jac_df)
 
 ```{r}
 # === Export RDS format
-saveRDS(cooc_jac_matrix, paste0(save_path_matrix, "/cooc_jaccard_matrix.rds"))
+safe_save_rds(cooc_jac_matrix, paste0(save_path_matrix, "/cooc_jaccard_matrix.rds"))
 
   # === Export CSV format
-write.csv(cooc_jac_matrix,
+safe_write_csv(cooc_jac_matrix,
           paste0(save_path_matrix, "/cooc_jaccard_matrix.csv"),
           row.names = TRUE)
 ```
@@ -301,7 +298,7 @@ species_order <- Reduce(intersect, list(
   colnames(cooc_jac_matrix)
 ))
 
-write.csv(
+safe_write_csv(
   species_order,
   file.path(save_path, paste0("species_order.csv")),
   row.names = FALSE
@@ -380,7 +377,7 @@ mantel_df <- data.frame(
   schoener_d = as.vector(schoener_dist)
 )
 
-write.csv(mantel_df,
+safe_write_csv(mantel_df,
           paste0(save_path, "/mantel_df_coocurrence.csv"))
 ```
 
@@ -401,7 +398,7 @@ plot1
 ```
 
 ```{r}
-ggsave(paste0(save_path_figs, "/plot1_nichesimilarity_DSchoener_co_mentel.png"),
+safe_ggsave(paste0(save_path_figs, "/plot1_nichesimilarity_DSchoener_co_mentel.png"),
        plot = plot1, width = 10, height = 5, units = "in", dpi = 600)
 ```
 
@@ -422,7 +419,7 @@ plot2
 ```
 
 ```{r}
-ggsave(paste0(save_path_figs, "/plot2_nichesimilarity_Jaccard_co_mentel.png"), 
+safe_ggsave(paste0(save_path_figs, "/plot2_nichesimilarity_Jaccard_co_mentel.png"),
        plot = plot2, width = 10, height = 5, units = "in", dpi = 600)
 ```
 
@@ -443,7 +440,7 @@ plot3
 ```
 
 ```{r}
-ggsave(paste0(save_path_figs, "/plot3_nicheproximity_co_mentel.png"),
+safe_ggsave(paste0(save_path_figs, "/plot3_nicheproximity_co_mentel.png"),
        plot = plot3, width = 10, height = 5, units = "in", dpi = 600)
 ```
 
@@ -465,7 +462,7 @@ combined_plot
 
 
 ```{r}
-ggsave(paste0(save_path_figs, "/Combined_plot_coocurrence_niche.png"), 
+safe_ggsave(paste0(save_path_figs, "/Combined_plot_coocurrence_niche.png"),
        plot = combined_plot, width = 20, height = 10, units = "in", dpi = 600)
 ```
 
@@ -478,9 +475,9 @@ resid_jaccard  <- mantel.residuals(cooc_mat, niche_jd)
 resid_centroid <- mantel.residuals(cooc_mat, niche_cent)
 
 # save
-saveRDS(resid_schoener,  paste0(save_path, "/mantel_residuals_schoener.rds"))
-saveRDS(resid_jaccard,  paste0(save_path, "/mantel_residuals_jaccard.rds"))
-saveRDS(resid_centroid, paste0(save_path, "/mantel_residuals_centroid.rds"))
+safe_save_rds(resid_schoener,  paste0(save_path, "/mantel_residuals_schoener.rds"))
+safe_save_rds(resid_jaccard,  paste0(save_path, "/mantel_residuals_jaccard.rds"))
+safe_save_rds(resid_centroid, paste0(save_path, "/mantel_residuals_centroid.rds"))
 
 ```
 
@@ -622,7 +619,7 @@ run_residual_workflow <- function(metric_name,
                                   top_n = 10) {
   
   # 1. Load
-  residuals_obj <- readRDS(rds_file)
+  residuals_obj <- safe_read_rds(rds_file)
   
   # 2. Prepare
   resid_df <- prepare_residual_df(residuals_obj, species_order)
@@ -645,19 +642,19 @@ run_residual_workflow <- function(metric_name,
   pairs_residual_negative_top <- get_top_pairs(resid_df, negative_label, n_top = top_n)
   
   # 5. Export csv
-  write.csv(
+  safe_write_csv(
     resid_summary,
     file.path(save_path, paste0("residual_summary_", tolower(metric_name), ".csv")),
     row.names = FALSE
   )
   
-  write.csv(
+  safe_write_csv(
     pairs_residual_positive,
     file.path(save_path, paste0(metric_name, "_residual_positive.csv")),
     row.names = FALSE
   )
   
-  write.csv(
+  safe_write_csv(
     pairs_residual_negative,
     file.path(save_path, paste0(metric_name, "_residual_negative.csv")),
     row.names = FALSE
@@ -679,7 +676,7 @@ run_residual_workflow <- function(metric_name,
     y_limits = y_limits
   )
   
-  ggsave(
+  safe_ggsave(
     file.path(save_path, paste0(plot_file_prefix, "_", tolower(metric_name), ".png")),
     plot = p,
     width = 9,
@@ -788,7 +785,7 @@ p_resid_facet
 ```
 
 ```{r}
-ggsave(filename = file.path(save_path_figs, "residual_spectrum_facet.png"),
+safe_ggsave(filename = file.path(save_path_figs, "residual_spectrum_facet.png"),
   plot = p_resid_facet, width = 8, height = 7, units = "in", dpi = 600)
 ```
 
