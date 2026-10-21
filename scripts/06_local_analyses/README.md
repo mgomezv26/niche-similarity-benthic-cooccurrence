@@ -11,6 +11,8 @@ Los Rmd permanecen completos. El script ambiental conserva sus bloques completos
 
 Se mantiene la definición confirmada: observed_local es similitud Jaccard local; expected_global es HV Jaccard global; residual = observed_local - expected_global. La media de (residual + 1) / 2 por comunidad es un índice relativo entre 0 y 1. El nombre mean_expected_prob se conserva, sin interpretarlo como probabilidad calibrada.
 
-Estado: copias sin ejecución, pendientes de rutas y controles técnicos. No ejecutar los archivos completos con sus salidas originales. Los resultados B0/C, B1 y D existentes permanecen intactos en results/validation y excluidos de Git; esta fase no los copia ni aplica automáticamente sus conclusiones al código principal.
+Estado: copias documentales, sin ejecución automatizada ni reproducción numérica certificada. No ejecutar los archivos completos con sus salidas originales. Los informes completos B0/B1/C/D no están disponibles en esta copia; se recuperarán del ordenador del trabajo. Se conservan sus antecedentes comunicados, sin volver a ejecutarlos ni aplicar automáticamente sus conclusiones al código principal.
 
-Se conserva el escenario ambiental original con filas repetidas. Los contrastes de pendientes e interacciones del código original no se presentan como sustitutos de los contrastes completos ya validados en C. Antes de automatizar deberá decidirse cómo integrar esa validación sin alterar silenciosamente el análisis publicado.
+Se conserva el escenario ambiental original con filas repetidas. Los contrastes de pendientes e interacciones del código original no se presentan como sustitutos de los contrastes completos ya validados en C. La validación se documenta por separado, sin sustituir ni modificar el análisis original.
+
+El Mantel local se conserva como **análisis del estudio con correspondencia editorial pendiente**. DP025 es referencia histórica provisional por coincidir con el HTML; DP027 sigue como alternativa documentada. Véase la [correspondencia con el manuscrito](../07_figures/README.md).

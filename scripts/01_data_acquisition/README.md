@@ -12,4 +12,4 @@ Estado: documentación del procesamiento original cerrado. No ejecutar descargas
 
 Los tres campos de autenticación GBIF se leen mediante Sys.getenv: GBIF_USER, GBIF_PWD y GBIF_EMAIL. Ningún valor original de esos campos se publica. CMEMS puede requerir autenticación externa propia; no se incorpora configuración local.
 
-Persisten rutas relativas, entradas externas y salidas con nombres originales. La correspondencia exacta entre estos nombres y los productos definitivos se documentará antes de una eventual ejecución autorizada. No se han modificado filtros ni se ha comprobado la ejecución de las copias.
+Persisten rutas relativas, entradas externas y salidas con nombres originales. La correspondencia entre nombres y productos se documenta como procedencia, sin preparar una ejecución automatizada. No se han modificado filtros ni se ha comprobado la ejecución de las copias.

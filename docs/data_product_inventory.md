@@ -2,7 +2,13 @@
 
 Fecha: 2026-10-20. Estado: propuesta documental para revisión, no manifiesto público definitivo ni autorización de ejecución.
 
-## Alcance y evidencia
+## Estado vigente tras la simplificación
+
+Los dos inventarios de fase 1 están aprobados como documentación: se conservan sus 121 productos, referencias, hashes y comparaciones; no son manifiestos públicos definitivos. El CSV no se modifica. DP025 queda como referencia histórica provisional por su coincidencia con el HTML; DP027 permanece como alternativa, sin declararlo erróneo. La correspondencia editorial del Mantel local sigue pendiente.
+
+Este documento conserva a continuación las observaciones y propuestas de la fase 1. La estructura de ejecución y los destinos de publicación propuestos entonces son **antecedentes no vigentes**, no compromisos: el objetivo actual es un archivo documental de código. No se aprueba la publicación de datos ni resultados, no se crean depósitos y no se adaptan nuevos scripts. Los informes B0/B1/C/D se recuperarán del ordenador del trabajo, sin volver a ejecutarlos. Véanse los [pendientes actuales](technical_pending.md).
+
+## Alcance y evidencia de la fase 1
 
 Se han localizado e inventariado **121 archivos**, con tamaño y SHA256 individual en [data_product_inventory.csv](data_product_inventory.csv). Suman 3.369.699.651 bytes contando copias y productos históricos; esta cifra no representa el tamaño de un futuro depósito. Los identificadores DP son referencias internas estables y tienen saltos deliberados.
 
@@ -113,7 +119,7 @@ La existencia de DP025/027 y DP121 acredita resultados guardados de esos anális
 5. **Correspondencia editorial:** faltan aprobación de la versión Mantel local y de figuras alternativas, así como trazabilidad final entre archivos y paneles editados. Fig. 1 procede de QGIS; Fig. 4 incluye montaje manual. No se pretende regenerar estos montajes con los siete scripts.
 6. **Alcance:** no es un inventario exhaustivo de todos los insumos históricos, paquetes, archivos de edición o productos del estudio. No se reconstruyó la cadena anterior de ocurrencias/PCA/hipervolúmenes ni se resolvió aquí S1.
 
-## Propuesta de publicación y estructura segura
+## Propuesta histórica de publicación y estructura segura (no vigente)
 
 Propuesta sujeta a selección de versiones, revisión de contenido privado y derechos; no se ha preparado un depósito ni un manifiesto público definitivo.
 
@@ -146,11 +152,11 @@ Estructura futura sugerida, **no creada**:
 
 Las referencias originales permanecerían inmutables; las futuras ejecuciones escribirían en un directorio nuevo por ejecución. Los intermedios publicados se etiquetarían como referencias preexistentes o entradas de ejecución parcial, sin sobrescribirlos con cálculos nuevos. Habría que aprobar posteriormente la configuración y las exclusiones de Git; no se han implementado.
 
-## Decisiones confirmadas y revisión necesaria
+## Decisiones y revisión planteadas al cierre de la fase 1 (registro histórico)
 
 Se respetan las decisiones de `PROJECT_HANDOFF.md`: no alterar presencias ni filtros GBIF/OBIS; no reconstruir hipervolúmenes ni cambiar parámetros; mantener seis componentes PCA seleccionados con Broken Stick y varianza acumulada aproximada de 89,96 %; preservar residuos locales e índice relativo `mean_expected_prob`; mantener B0/B1/C/D separados. No se modificaron manuscrito, datos ni resultados. `17_Phylogeny.R` y `17_ISA.R` permanecen excluidos y sus originales intactos; los residuos filogenéticos de Porifera/Cnidaria se conservan.
 
-Prioridad de revisión por el autor:
+Prioridad propuesta entonces; las decisiones posteriores se recogen al inicio:
 
 1. Confirmar el pasaje/versionado del manuscrito para los nueve Mantel locales y aprobar cuál de DP025/027 será referencia.
 2. Aprobar el conjunto de entradas identificado por rutas explícitas y las representaciones canónicas CSV/RDS/XLSX, sin descartar originales.

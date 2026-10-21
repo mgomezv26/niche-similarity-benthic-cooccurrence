@@ -8,4 +8,4 @@
 
 Estado: documentación del procedimiento original cerrado. No se han ejecutado ni se propone recalcular hipervolúmenes o métricas de nicho.
 
-Las rutas privadas se han saneado; la estructura relativa y los parámetros científicos permanecen en el código. Algunos scripts contienen más de un bloque de cálculo. No hay todavía una selección automatizada de bloques ni un entorno fijado. Los productos definitivos deberán identificarse por hash y depósito externo antes de conectar los análisis posteriores.
+Las rutas privadas se han saneado; la estructura relativa y los parámetros científicos permanecen en el código. Algunos scripts contienen más de un bloque de cálculo. No hay todavía una selección automatizada de bloques ni un entorno fijado. Los productos y sus hashes se conservan en los inventarios documentales; su selección o publicación externa requiere revisión, sin conectarlos a un ejecutor.

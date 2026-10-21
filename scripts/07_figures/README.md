@@ -1,21 +1,37 @@
-# 07 — Figuras
+# 07 — Correspondencia con el manuscrito
 
-Esta carpeta reserva la etapa de figuras. En esta fase no contiene scripts científicos independientes: los Rmd originales conservan íntegros sus cálculos y figuras en 05_global_analyses y 06_local_analyses.
+Índice documental; no contiene scripts independientes. Los Rmd conservan íntegros sus cálculos y figuras. Referencia editorial: `MS_Bentic_MG_13_7_2026_review.docx`, incluido el suplemento de su parte final; el suplemento independiente es anterior.
 
-| Producto | Ubicación del código o procedimiento |
-| --- | --- |
-| Figuras globales de relaciones y residuos | ../05_global_analyses/14_Mantel_test_clean.Rmd |
-| Figura 4: gráficos residuo–filogenia | ../05_global_analyses/Residuals_Porifera.Rmd y Residuals_Cnidaria.Rmd; gráficos estadísticos exportados desde R |
-| Figura 4: composición editorial final | Cuatro paneles combinados en Affinity, con ilustraciones de Porifera y Cnidaria añadidas allí |
-| Figuras locales de comparación entre escalas y cuantiles | ../06_local_analyses/02_Mantel_Test_Local_Scale.Rmd y 03_expected_vs_observed_cooccurrence.Rmd |
-| Resúmenes locales por comunidad | ../06_local_analyses/04_Analisis_residuos_locales.R |
-| Modelos ambientales locales | ../06_local_analyses/00_Env_data_norway.R |
-| Figura 1: cartografía del área de estudio | Captura definitiva obtenida en QGIS; no existe script R de su composición final |
+La correspondencia procede de la lectura del manuscrito y del código, sin ejecutar análisis ni verificar igualdad numérica. Identificar un bloque pertinente no certifica la selección de una versión editorial guardada.
 
-Entradas: productos definitivos y resultados asociados a cada documento. Salidas: PNG y tablas con los nombres conservados dentro de los scripts.
+## Productos del manuscrito
 
-Estado: no se han renderizado documentos ni generado figuras. Las procedencias de las figuras 1 y 4 están confirmadas por la investigadora. No reconstruir la captura QGIS ni crear un script artificial; no automatizar ni reproducir la composición Affinity sin autorización. La reproducción estadística de la Figura 4 termina en los gráficos exportados de R. Sigue pendiente identificar los archivos finales y sus hashes.
+| Sección o producto | Código o procedimiento identificado | Alcance |
+| --- | --- | --- |
+| Adquisición y preparación; tabla 1 | [Etapa 01](../01_data_acquisition/README.md) y [etapa 02](../02_data_processing/README.md) | Procedencia y tratamiento de variables; tabla de fuentes como síntesis editorial |
+| PCA; tabla 2 | [11_PCA_REALM.R](../03_pca/11_PCA_REALM.R) | PCA, varianza y diagnósticos; decisión PCA6 conservada |
+| Hipervolúmenes y métricas de nicho | [Etapa 04](../04_hypervolumes/README.md) | Procedimiento original, sin visualizaciones adicionales ajenas al artículo |
+| Figura 1 | Preparación espacial en etapa 02; captura QGIS | Composición externa; no hay generador R de la figura final |
+| Tabla 4; figuras 2–3 | [14_Mantel_test_clean.Rmd](../05_global_analyses/14_Mantel_test_clean.Rmd) | Mantel global, relaciones y residuos |
+| Tabla 5; figura 4 | [Residuals_Porifera.Rmd](../05_global_analyses/Residuals_Porifera.Rmd) y [Residuals_Cnidaria.Rmd](../05_global_analyses/Residuals_Cnidaria.Rmd) | Estadística sobre residuos y distancias genéticas externas; gráficos R y montaje Affinity |
+| Tabla 6; figura 5 | [03_expected_vs_observed_cooccurrence.Rmd](../06_local_analyses/03_expected_vs_observed_cooccurrence.Rmd) | Cuantiles y gráficos por escala |
+| Tabla 7; figura 6 | [03_expected_vs_observed_cooccurrence.Rmd](../06_local_analyses/03_expected_vs_observed_cooccurrence.Rmd) | Residuos locales y comparación entre escalas |
+| Tabla 3; figura 7 | [04_Analisis_residuos_locales.R](../06_local_analyses/04_Analisis_residuos_locales.R) | Recuentos de comunidades e índice relativo, no probabilidad calibrada |
+| Tablas 8–9; figura 8 | [00_Env_data_norway.R](../06_local_analyses/00_Env_data_norway.R) | Modelos ambientales originales, resúmenes y coeficientes |
+| Tabla S2 | [06_Join_Harmonise_Enviromental_Variables.R](../02_data_processing/06_Join_Harmonise_Enviromental_Variables.R) | Bloque de reclasificación sedimentaria; presentación editorial |
+| Figura S3; tabla S3 | [00_Env_data_norway.R](../06_local_analyses/00_Env_data_norway.R) | Correlaciones ambientales y VIF |
+| S1 | Esquema presente en el suplemento | Tabla aún no elaborada; columnas no aprobadas. No generar tabla ni código nuevo |
 
-La referencia editorial definitiva del suplemento es la incluida al final de MS_Bentic_MG_13_7_2026_review.docx. El suplemento independiente es una versión anterior. La Tabla S1 aún no está elaborada: sus columnas no son un formato aprobado y no debe generarse todavía.
+## Análisis conservados y antecedentes
 
-Las variantes 16_Hypervolume_Plots.Rmd no se copian. La posible incorporación de nuevos materiales suplementarios no está decidida; su existencia no justifica ampliar el suplemento definitivo. Permanecen localizables por origen y hash en docs/source_inventory.csv. No se crea variants/ ni se divide ningún Rmd.
+- [02_Mantel_Test_Local_Scale.Rmd](../06_local_analyses/02_Mantel_Test_Local_Scale.Rmd) se conserva como **análisis del estudio con correspondencia editorial pendiente**. No se localizó un pasaje explícito de los nueve Mantel locales en los resultados revisados. No se presentan como publicados ni se reclasifican como auxiliares por carecer de figura o tabla. DP025 es referencia histórica provisional por coincidir con el HTML original; DP027 sigue como alternativa documentada, sin declararlo erróneo.
+- Los bloques exploratorios originales se conservan sin atribuir automáticamente sus resultados al artículo. El bloque posterior de selección de modelos del script ambiental no se convierte en análisis principal.
+- B0, B1, C y D permanecen separados. Sus resultados comunicados se conservan en el [traspaso](../../docs/PROJECT_HANDOFF.md); no sustituyen los originales ni se recalculan.
+
+## Procedimientos externos y límites
+
+Los análisis genéticos fueron realizados por otra persona mediante software especializado. Las matrices COI/MEGA son entradas ya obtenidas de los dos Rmd estadísticos. Sigue pendiente completar su atribución y procedencia documental con información acreditada, sin inventar código genético.
+
+La Figura 1 es una captura QGIS. Los cuatro paneles de la Figura 4 se exportaron desde R y se combinaron en Affinity, donde se añadieron las ilustraciones. Estos pasos no se automatizan. Sigue pendiente identificar los archivos editoriales finales cuando existan copias alternativas.
+
+`17_Phylogeny.R` y `17_ISA.R` permanecen excluidos. Las variantes `16_Hypervolume_Plots.Rmd` no se incorporan: sus referencias y hashes siguen en el [inventario de fuentes](../../docs/source_inventory.csv), sin ampliar el suplemento ni crear nuevos scripts científicos.

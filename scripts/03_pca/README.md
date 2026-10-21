@@ -12,4 +12,4 @@ La frase del manuscrito «The number of retained axes was selected using the Bro
 
 Estado: código metodológico, no ejecutado ni certificado desde cero. Se mantiene incluso el carácter aislado al inicio y las dependencias/objetos implícitos señalados en la auditoría. No se han corregido sintaxis, estandarización, selección de variables ni número de componentes. La ruta privada se ha sustituido por un marcador.
 
-El futuro flujo automatizado utilizará la malla PCA6 definitiva depositada externamente. Cualquier corrección técnica del script deberá revisarse por separado y no habilita recalcular PCA ni hipervolúmenes.
+La malla PCA6 definitiva se identifica como producto externo del procedimiento original; no se prepara un flujo automatizado. Cualquier corrección técnica del script deberá revisarse por separado y no habilita recalcular PCA ni hipervolúmenes.

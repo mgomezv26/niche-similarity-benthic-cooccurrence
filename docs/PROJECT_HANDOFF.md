@@ -4,7 +4,23 @@ Fecha de revisión: 20 de octubre de 2026. Repositorio: `niche-similarity-benthi
 
 Este documento permite retomar el trabajo sin el historial de la conversación anterior. Se basa en la copia local del repositorio y en las instrucciones expresas de la investigadora para este traspaso. No reconstruye conversaciones, informes ni conclusiones ausentes.
 
-## 1. Cómo interpretar el estado
+## Actualización vigente: archivo documental del código
+
+Tras la revisión del alcance, se conserva el código científico como documentación del procedimiento realizado, sin automatización ni reproducción numérica verificada. Se mantienen las siete etapas, los 22 scripts y todos los Rmd completos. No se reconstruyen ocurrencias, PCA, hipervolúmenes ni otros productos originales.
+
+Se han retirado los seis archivos experimentales de infraestructura de `tools/`, `tests/` y `config/`; su desarrollo permanece en el historial. El Rmd global se restaura desde `0532fb7`, con su saneamiento de privacidad y finales de línea CRLF: SHA256 `b766bc3c90c861ac599f48ce8dcb5614361470d49f7970c6f2617ad29bf3d232`, coincidente con el inventario. Conserva 54 bloques, tres Mantel de 1.000 permutaciones y ninguna llamada a `set.seed()`.
+
+Los análisis genéticos fueron realizados externamente por otra persona mediante software especializado. Los Rmd de Porifera y Cnidaria se conservan únicamente por sus análisis estadísticos de residuos y matrices genéticas ya obtenidas. No se incorpora código para generar esas matrices ni se recuperan scripts descartados.
+
+El Mantel local se mantiene como **análisis del estudio con correspondencia editorial pendiente**. DP025 es referencia histórica provisional porque coincide con el HTML original; DP027 permanece como alternativa documentada, sin sobrescribirlo ni declararlo erróneo. Los 121 productos y sus hashes se conservan como inventario documental aprobado, no como manifiesto público definitivo. No se aprueba ningún producto para redistribución.
+
+B0, B1, C y D no se volverán a ejecutar; sus informes completos se recuperarán del ordenador del trabajo. Se conservan íntegros sus antecedentes comunicados en la sección 4. Las decisiones metodológicas de la sección 3 permanecen vigentes.
+
+El desarrollo previo llegó a superar 44 pruebas técnicas con archivos ficticios; eso no acredita resultados científicos. El renderizado completo no llegó a validarse. Una inspección posterior encontró los paquetes de renderizado en la biblioteca de usuario y Pandoc instalado: los fallos iniciales de disponibilidad no demostraban ausencia de instalación. La ejecución y su infraestructura dejan de ser tareas del repositorio.
+
+Consulte los [pendientes vigentes](technical_pending.md) y la [correspondencia con el manuscrito](../scripts/07_figures/README.md). Las secciones siguientes se conservan como **registro histórico del traspaso del 20 de octubre de 2026**: sus propuestas de adaptación y automatización están superadas, no son compromisos actuales. Sus afirmaciones «verificado ahora» se refieren a aquella revisión; no reescriben el historial posterior.
+
+## 1. Cómo interpretar el estado (registro histórico)
 
 - **Verificado en esta revisión:** observado directamente en archivos, estructura o comprobaciones de hashes de esta copia.
 - **Antecedente documentado:** afirmación de los registros anteriores; no equivale a una nueva comprobación de sus originales ni de sus resultados.
@@ -98,7 +114,7 @@ El registro de **159 archivos sin cambios** es agregado para B0/C, B1 y D: no ap
 
 Los resúmenes anteriores amplían los antecedentes disponibles con los resultados comunicados por la investigadora; no sustituyen los informes completos, sus datos ni su implementación. **No se certifican de nuevo aquí sus resultados, significación, robustez ni conclusiones.** B0, B1, C y D se conservan como validaciones separadas, sin sustituir los análisis originales. Sigue pendiente recuperar los informes y archivos originales con su procedencia y hashes.
 
-## 5. Restricciones de trabajo y publicación
+## 5. Restricciones de la fase anterior (registro histórico)
 
 - La fase actual autoriza únicamente actualizar documentación existente y presentar una propuesta técnica. No adaptar código ni rutas, ejecutar modelos, Mantel o regresiones, generar figuras o tablas científicas, instalar dependencias, modificar manuscrito o suplementos, hacer commits o pushes. Esperar aprobación de la propuesta antes de modificar código.
 - Los scripts conservan `setwd`, rutas relativas y escrituras originales, incluidas opciones de sobrescritura o borrado señaladas en los pendientes. No ejecutarlos completos con esa configuración.
@@ -107,7 +123,7 @@ Los resúmenes anteriores amplían los antecedentes disponibles con los resultad
 - Mantener completos los Rmd y evitar duplicar su código en `07_figures`. No promover variantes históricas o exploratorias por su fecha o nombre.
 - La futura automatización debe partir de productos científicos definitivos externos. No reconstruir presencias, cuadrículas, PCA6, hipervolúmenes o coocurrencia original para resolver problemas técnicos.
 
-## 6. Tareas pendientes para una fase posterior
+## 6. Planificación posterior propuesta entonces (no vigente)
 
 Derivadas de [technical_pending.md](technical_pending.md), de los README y de las lagunas de esta revisión. Ninguna se ejecuta mediante este traspaso.
 
@@ -127,7 +143,7 @@ Derivadas de [technical_pending.md](technical_pending.md), de los README y de la
 | Definir la Tabla S1 | Propuesta editorial no elaborada; acordar contenido y columnas antes de autorizar su preparación. No generar todavía. |
 | Cerrar metadatos y correspondencia editorial | Licencia de código, permisos de datos, autores, cita y tabla salida–panel–figura/tabla del manuscrito, sin modificar este último. |
 
-## 7. Lagunas que impiden un traspaso científico completo
+## 7. Lagunas documentadas en aquel traspaso
 
 Faltan en esta copia los informes originales de validación y sus resultados detallados, el manifiesto de productos definitivos, la trazabilidad completa de la preparación QGIS y COI/MEGA, y la identificación por archivo y hash de las salidas editoriales finales. La auditoría localizó productos externos, pero su existencia no certifica su selección definitiva. La referencia del suplemento y las procedencias de las figuras 1 y 4 están resueltas. No hay entorno fijado ni ejecución certificada de las copias.
 

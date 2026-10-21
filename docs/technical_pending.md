@@ -1,12 +1,34 @@
-# Pendientes antes de adaptar o ejecutar
+# Pendientes de publicación del archivo documental
 
-## Cuestiones documentales cerradas
+## Alcance vigente
+
+El repositorio conserva el código del estudio, organizado y saneado, sin ejecución automatizada ni reproducción numérica certificada. Se retira la infraestructura experimental y se restaura únicamente el Rmd global desde `0532fb7`. Las siete etapas y los 22 scripts se conservan completos. No se ejecutan análisis ni se reconstruyen productos.
+
+## Pendientes reales
+
+1. Acordar licencia del código, autoría y forma de cita; cerrar la revisión pública de selección y privacidad. Los inventarios y hashes se conservan.
+2. Confirmar las versiones editoriales de figuras cuando existen alternativas e identificar los archivos finales de QGIS/Affinity. Véase la [correspondencia de productos](../scripts/07_figures/README.md).
+3. Completar la atribución y procedencia de las matrices genéticas obtenidas externamente por otra persona con software especializado. Los Rmd de Porifera y Cnidaria solo analizan estadísticamente esas matrices y los residuos; no se inventa un generador genético.
+4. Resolver la correspondencia editorial de los nueve Mantel locales, conservados como análisis del estudio. DP025 es referencia histórica provisional; DP027 sigue documentado sin considerarse erróneo. No se añade contenido al manuscrito ni al suplemento.
+5. Mantener S1 como cuestión editorial no resuelta: tabla aún no elaborada, columnas no aprobadas. No generar código o resultados para completarla.
+6. Recuperar posteriormente los informes completos B0/B1/C/D del ordenador del trabajo, sin volver a ejecutarlos. Los resúmenes comunicados no equivalen a verificaciones nuevas.
+7. Si se decide publicar datos o resultados por separado, revisar antes derechos, licencias y versiones. Los 121 productos inventariados no están aprobados para publicación; un depósito Figshare no es requisito del actual archivo de código.
+
+No quedan tareas de lanzadores, adaptadores, autorización de escrituras, pruebas de ejecución, renderizado o configuración de un entorno automatizado dentro de este alcance. Las dependencias observadas se documentan como antecedentes; no se prometen instalaciones o ejecuciones verificadas. `17_Phylogeny.R`, `17_ISA.R` y variantes de hipervolúmenes sin producto en el artículo no se recuperan.
+
+## Antecedente histórico: planificación técnica anterior, no vigente
+
+Se conserva a continuación el texto anterior para no perder decisiones y lagunas documentadas. Sus instrucciones de adaptación, automatización y publicación de productos no constituyen tareas actuales. Las decisiones científicas confirmadas permanecen vigentes; el estado editorial actual del Mantel local es el indicado arriba, no su antigua consideración como posible auxiliar.
+
+### Plan anterior: pendientes antes de adaptar o ejecutar
+
+### Cuestiones documentales cerradas (registro anterior)
 
 El traspaso está aprobado. El suplemento definitivo es el incluido al final de `MS_Bentic_MG_13_7_2026_review.docx`; el documento independiente es anterior. La Figura 1 es una captura QGIS, sin script R de composición. La Figura 4 combina gráficos exportados por los dos Rmd de residuos filogenéticos con montaje e ilustraciones añadidas en Affinity. No buscar generadores artificiales ni automatizar estas composiciones.
 
 PCA6 conserva Broken Stick complementado por la varianza acumulada (aproximadamente 89,96 %), sin exigir que los seis ejes superen Broken Stick. La frase del manuscrito que describe ese criterio combinado es correcta. La posible superación por solo PC1 y PC6 es un recuerdo no confirmado; consultar resultados originales si se necesita precisarlo, sin recalcular. Las exclusiones definitivas de `17_Phylogeny.R` y `17_ISA.R` permanecen vigentes.
 
-## Pendientes vigentes
+### Pendientes que se plantearon en esa fase
 
 1. Aprobar las copias públicas y su saneamiento. Los marcadores __CONFIGURE_PATH_*__ son intencionadamente inoperantes y se numeran dentro de cada archivo; no constituyen rutas ya adaptadas.
 2. Definir un manifiesto de productos externos definitivos: nombre, función, DOI/versión de Figshare, licencia, tamaño, SHA256 y destino de descarga. No se han transferido datos.
