@@ -11,7 +11,7 @@ Este documento permite retomar el trabajo sin el historial de la conversación a
 - **Decisión confirmada:** restricción o criterio metodológico que debe mantenerse, confirmado por la investigadora y, cuando se indica, recogido también en los README.
 - **Pendiente:** información o trabajo todavía necesario; su inclusión no autoriza ejecutarlo.
 
-La revisión ha sido documental y estática. No se han ejecutado análisis científicos, renderizado Rmd, instalado paquetes ni consultado servicios científicos externos. La única incorporación de esta tarea es este documento; no se modifican otros archivos ni se realizan commits o pushes.
+La revisión ha sido documental y estática. No se han ejecutado análisis científicos, renderizado Rmd ni instalado paquetes. Tras la aprobación de este traspaso, se autoriza actualizar documentación existente y proponer la preparación técnica; todavía no se autoriza adaptar código ni ejecutar análisis. No se realizan commits o pushes.
 
 ## 2. Estado verificado del repositorio
 
@@ -71,6 +71,14 @@ La lectura estática de `04_Analisis_residuos_locales.R` confirma que el índice
 
 El README local también establece conservar el escenario ambiental original con filas repetidas. El bloque exploratorio de selección de modelos se conserva como código histórico, sin convertirlo automáticamente en análisis principal. Los contrastes originales de pendientes e interacciones no deben presentarse como sustitutos de los contrastes completos referidos en C.
 
+### Decisiones editoriales confirmadas tras la auditoría
+
+- **Suplemento definitivo:** el incluido al final de `MS_Bentic_MG_13_7_2026_review.docx`. El documento suplementario independiente es una versión anterior y no es referencia editorial definitiva. La incorporación de nuevos materiales suplementarios sigue sin decidirse.
+- **Figura 1:** captura definitiva obtenida en QGIS. No existe un script R de su composición final; no reconstruirla ni crear un generador artificial. Su procedencia queda resuelta; identificar y archivar el archivo final es una tarea distinta.
+- **Figura 4:** los gráficos estadísticos se generaron y exportaron en R con `Residuals_Porifera.Rmd` y `Residuals_Cnidaria.Rmd`. Los cuatro paneles se combinaron en Affinity, donde se añadieron las ilustraciones de Porifera y Cnidaria. La reproducción estadística termina en los gráficos exportados de R; la composición editorial final es manual y no debe automatizarse ni reproducirse sin autorización.
+- **Tabla S1:** propuesta todavía no elaborada. Sus columnas en el manuscrito no constituyen un formato aprobado. Mantenerla como tarea editorial pendiente, sin generarla.
+- **PCA6:** la frase «The number of retained axes was selected using the Broken Stick criterion, complemented by the cumulative percentage of explained variance.» es correcta y no requiere modificación. Se conservan seis ejes y aproximadamente el 89,96 % de varianza. El recuerdo de que posiblemente solo PC1 y PC6 superaron Broken Stick no está confirmado y no debe presentarse como resultado sin consultar las salidas originales; no recalcular la PCA para comprobarlo.
+
 ## 4. Validaciones previas: evidencia disponible y límites
 
 **Verificado ahora:** no existe `results/validation/` en esta copia local; tampoco hay carpetas `data/`, `results/` o `figures/` en la raíz. Git no enumera archivos versionados bajo esas tres rutas. `.gitignore` excluye expresamente `/results/validation/`, y se comprobó que la regla se aplica.
@@ -92,7 +100,7 @@ Los resúmenes anteriores amplían los antecedentes disponibles con los resultad
 
 ## 5. Restricciones de trabajo y publicación
 
-- El encargo actual autoriza únicamente crear este documento y revisarlo. No ejecutar scripts ni análisis, instalar paquetes, adaptar rutas, modificar otros archivos, hacer commits o pushes.
+- La fase actual autoriza únicamente actualizar documentación existente y presentar una propuesta técnica. No adaptar código ni rutas, ejecutar modelos, Mantel o regresiones, generar figuras o tablas científicas, instalar dependencias, modificar manuscrito o suplementos, hacer commits o pushes. Esperar aprobación de la propuesta antes de modificar código.
 - Los scripts conservan `setwd`, rutas relativas y escrituras originales, incluidas opciones de sobrescritura o borrado señaladas en los pendientes. No ejecutarlos completos con esa configuración.
 - Mantener datos, resultados, validaciones completas, configuración privada y manuscrito fuera de la publicación automática. `.gitignore` es preventivo; cualquier selección pública necesita revisión expresa.
 - No volver a introducir valores privados eliminados. La revisión estática previa no es una certificación universal de ausencia de secretos, especialmente para fuentes no copiadas.
@@ -109,19 +117,20 @@ Derivadas de [technical_pending.md](technical_pending.md), de los README y de la
 | Recuperar documentación de B0, B1, C y D | Informes y archivos originales, identificados por validación, con procedencia y hashes; conservar resultados originales y sensibilidades diferenciados. |
 | Definir productos externos definitivos | Manifiesto con nombre, función, DOI/versión de Figshare, licencia, tamaño, SHA256 y destino. La documentación actual no aporta un depósito configurado. |
 | Acordar entradas y salidas seguras | Rutas relativas, correspondencia de nombres entre etapas y carpeta nueva de resultados con protección contra sobrescritura. |
-| Documentar pasos manuales QGIS | Entradas y salidas con hash, versión, herramientas y parámetros, CRS, claves y tipo de unión, selección/reparación de geometrías y recuentos. |
+| Documentar pasos originales de preparación QGIS | Entradas y salidas con hash, versión, herramientas y parámetros, CRS, claves y tipo de unión, selección/reparación de geometrías y recuentos. La procedencia de la Figura 1 ya está confirmada como captura QGIS; no buscar ni crear un script de su composición. |
 | Acreditar las matrices COI/MEGA finales | Productos y procedencia para los análisis conservados de residuos filogenéticos de Porifera y Cnidaria. `17_Phylogeny.R` queda definitivamente excluido y no es candidato para completar esta trazabilidad. |
 | Revisar problemas exclusivamente técnicos | Carácter inicial de `11_PCA_REALM.R`, sintaxis, bibliotecas y objetos implícitos, nombres y directorios. Cualquier corrección requiere revisión separada y no habilita recalcular PCA o hipervolúmenes. |
 | Fijar entorno y versiones | Revisar `dependencies_observed.csv`; sus declaraciones y los comentarios históricos no acreditan versiones instaladas ni constituyen un archivo de bloqueo. |
 | Diseñar ejecución desde productos finales | Definir el ejecutor y sus controles sin reabrir el procesamiento científico cerrado; no afirmar reproducibilidad integral antes de verificarla. |
 | Seleccionar material de validación publicable | Decidir qué resultados e implementación de contrastes se incluirán, preservando B0, B1, C y D y sin sustituciones silenciosas. |
-| Resolver scripts de función pendiente | Confirmar papel de las restantes variantes suplementarias y taxonómicas. `17_Phylogeny.R` y `17_ISA.R` tienen exclusión definitiva confirmada y no son candidatos para incorporar; sus originales se conservan. |
+| Decidir posibles materiales adicionales | No incorporar variantes suplementarias o taxonómicas por su mera existencia. El suplemento definitivo está identificado; cualquier ampliación requiere una decisión expresa. `17_Phylogeny.R` y `17_ISA.R` siguen definitivamente excluidos. |
+| Definir la Tabla S1 | Propuesta editorial no elaborada; acordar contenido y columnas antes de autorizar su preparación. No generar todavía. |
 | Cerrar metadatos y correspondencia editorial | Licencia de código, permisos de datos, autores, cita y tabla salida–panel–figura/tabla del manuscrito, sin modificar este último. |
 
 ## 7. Lagunas que impiden un traspaso científico completo
 
-Faltan en esta copia los informes originales de validación y sus resultados detallados, los productos científicos finales y su manifiesto, la trazabilidad completa de QGIS y COI/MEGA, y la correspondencia definitiva de figuras/tablas. No hay entorno fijado ni ejecución certificada de las copias.
+Faltan en esta copia los informes originales de validación y sus resultados detallados, el manifiesto de productos definitivos, la trazabilidad completa de la preparación QGIS y COI/MEGA, y la identificación por archivo y hash de las salidas editoriales finales. La auditoría localizó productos externos, pero su existencia no certifica su selección definitiva. La referencia del suplemento y las procedencias de las figuras 1 y 4 están resueltas. No hay entorno fijado ni ejecución certificada de las copias.
 
-El historial conversacional anterior no está disponible. Las decisiones no recogidas en los archivos consultados o en las instrucciones actuales no se presuponen. Los originales externos, el manuscrito y los 159 archivos de validación no se han vuelto a comprobar en este ordenador.
+El historial conversacional anterior no está disponible. Las decisiones no recogidas en los archivos consultados o en las instrucciones actuales no se presuponen. La auditoría posterior leyó el manuscrito y el suplemento y contrastó los hashes de los 22 originales seleccionados y sus copias; no volvió a verificar los 159 archivos de validación.
 
-El siguiente paso queda pendiente de la revisión de este documento por la investigadora. Este traspaso no inicia ninguna de las tareas anteriores.
+El traspaso está aprobado. El siguiente paso es revisar la propuesta técnica; no iniciar adaptaciones de código hasta recibir su aprobación.

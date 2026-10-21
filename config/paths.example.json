@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "inputs_root": "${NICHE_INPUTS_ROOT}",
+  "reference_root": "${NICHE_REFERENCE_ROOT}",
+  "results_root": "results/runs",
+  "protected_sources": [
+    "${NICHE_ORIGINALS_ROOT}"
+  ],
+  "required_files": [
+    {
+      "id": "EXAMPLE_ONLY",
+      "root": "inputs",
+      "path": "replace-with-approved-relative-path.csv",
+      "sha256": "REPLACE_WITH_APPROVED_SHA256"
+    }
+  ]
+}

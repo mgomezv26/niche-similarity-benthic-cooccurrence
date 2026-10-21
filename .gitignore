@@ -31,6 +31,9 @@
 /results/validation/
 /results/runs/
 /figures/generated/
+/inputs/
+/reference/
+/config/paths.local.json
 
 # Local manuscript draft
 /MS_Bentic_*review.docx
