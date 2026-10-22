@@ -1,14 +1,19 @@
 
 library(dplyr)
 library(readxl)
+library(here)
 
 ###===================================================================================================================================###
 ### LOAD DATA
 ###===================================================================================================================================### 
 
-GBIF_data <- read.csv('01_DATA/03_GBIF/data_sea_base_map_1950.csv')
-OBIS_data <- read.csv('01_DATA/02_OBIS/data_clean_dates_1950.csv')
+GBIF_data <- read.csv(
+  here("data", "interim", "GBIF_data_sea_base_map_1950.csv")
+)
 
+OBIS_data <- read.csv(
+  here("data", "interim", "OBIS_data_clean_dates_1950.csv")
+)
 
 ###===================================================================================================================================###
 ### OCCURRENCE DATA INTEGRATION AND NORMALIZATION
@@ -84,21 +89,10 @@ length(unique(combined_data$species)) # 175
 length(unique(combined_data$scientificName)) # 175
 nrow(combined_data) # 554228
 
-# drop duplicates -----------------------------------------------------------------------
-
-# combined_data <- combined_data %>%
-#   distinct(species, latitude, longitude, year, .keep_all = TRUE)
-# nrow(combined_data) # 526686
-
-# write.csv(combined_data, "01_DATA/01_PROCESSED_DATA/combine_data_drop_duplicates_year.csv")
-
-
 combined_data <- combined_data %>%
   distinct(species, latitude, longitude, .keep_all = TRUE)
 
 nrow(combined_data) # 524981
-write.csv(combined_data, "01_DATA/01_PROCESSED_DATA/combine_data_drop_duplicates.csv")
-
 
 # Alignment of the time period with the oceanographic varibales ------------------------
 
@@ -109,4 +103,10 @@ data <- data %>% filter(year >= 2000)
 data <- data %>% filter(year <= 2020)
 
 nrow(data) # 320906
-write.csv(data, "01_DATA/01_PROCESSED_DATA/Data_Occurrence_period_2000_2020.csv")
+
+write.csv(
+  occurrences_clean,
+  here("data", "processed",
+       "Data_Occurrence_period_2000_2020.csv"),
+  row.names = FALSE
+)

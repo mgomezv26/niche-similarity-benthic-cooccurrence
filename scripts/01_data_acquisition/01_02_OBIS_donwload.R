@@ -30,8 +30,6 @@ for (species_name in list){
   data_obis <- rbind(data_obis, species_data) 
 }
 
-# write.csv(data_obis, "01_DATA/02_OBIS/obis_species_data_original.csv", row.names = FALSE)
-
 nrow(data_obis) # 1115692
 
 
@@ -111,8 +109,6 @@ data_obis <- data_obis %>%
 
 length(unique(data$scientificName)) # 175
 
-# write.csv(data_obis, "01_DATA/02_OBIS/obis_species_data_species_check.csv", row.names = FALSE)
-
 rm(list, Porania_pulvillus_data, Poraniomorpha_tumida_data, species_name, missing_cols, missing_species, missing_species_2)
 
 ###===================================================================================================================================###
@@ -177,7 +173,6 @@ sum(is.na(data$taxonRank)) # 932937
 # No filters have been applied taking into account the taxonRank field because all records are at species, subspecies or variety level. 
 # However, if detected, this field has many values (932,937), so they are ignored and kept as all records seem to be at species level.
 
-# write.csv(data, "01_DATA/02_OBIS/obis_data_basisOfRecord.csv", row.names = FALSE)
 
 ###===================================================================================================================================### 
 ### GEOGRAPHIC
@@ -214,9 +209,6 @@ data <- clean_coordinates(x = data,
                           value = "clean")
 
 nrow(data) # 562708
-
-# write.csv(data, '01_DATA/02_OBIS/data_clean_coordinates.csv')
-
 
 
 # 2. Check coordinates precision: ----
@@ -264,9 +256,6 @@ data <- clean_coordinates(x = data,
                           tests = c("validity", "equal", "duplicates"),
                           value = "clean")
 nrow(data) # 320499
-
-write.csv(data, '01_DATA/02_OBIS/data_clean_coordinates_round.csv',row.names=FALSE)
-
 
 
 # 4. Check position of coordinates: ----
@@ -351,8 +340,6 @@ common_ids <- intersect(data$id, data_land$id)
 length(common_ids) # 42238
 data_sea <- anti_join(data, data_land, by = "id")
 nrow(data_sea) # 278261
-write.csv(data_sea, '01_DATA/02_OBIS/data_sea_base_map.csv',row.names=FALSE)
-
 
 
 ###===================================================================================================================================###
@@ -398,7 +385,13 @@ data <- data %>% filter(year >= 1950)
 
 data$date <- as.Date(paste(data$day, data$month, data$year, sep = "/"), format = "%d/%m/%Y")
 
-write.csv(data, '01_DATA/02_OBIS/OBIS_data_clean_dates_1950.csv',row.names=FALSE)
+# 4. Guardar datos procesados
+write.csv(
+  occurrences_clean,
+  here("data", "interim",
+       "OBIS_data_sea_base_map_1950.csv"),
+  row.names = FALSE
+)
 
 ###===================================================================================================================================###
 ### DUPLICATES

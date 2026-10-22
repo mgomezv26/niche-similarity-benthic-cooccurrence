@@ -9,6 +9,12 @@ library(viridis)
 library(CoordinateCleaner)
 library(sf)
 
+library(here)
+
+# Leer datos de GBIF
+list_species <- read_excel(
+  here("data", "list_of_species.xlsx")
+)
 
 list_species <- read_excel("list_of_species_V0.xlsx", sheet = "species")
 str(list_species)
@@ -99,7 +105,7 @@ rm(fields)
 colSums(is.na(data))
 
 data$date <- paste(data$day, data$month, data$year, sep = '/')
-write.csv(data, "01_DATA/03_GBIF/df_gbif_original.csv")
+#write.csv(data, "01_DATA/03_GBIF/df_gbif_original.csv")
 
 nrow(data) #1253124
 
@@ -156,8 +162,6 @@ checklist_group <- checklist %>% group_by(phylum, class, order, family, genus, s
   summarise(n = n()) %>%
   arrange(phylum, class, order, family, genus,species)
 
-#write.table(checklist_group, '02_EDA/checklist_group.csv', sep=";", row.names=FALSE)
-
 
 #### GBIF tax backbone ####
 list <- checklist$scientificName
@@ -182,7 +186,6 @@ table(checklist$gbif_status)
 #"SYNONYM" 535
 #"DOUBTFUL" 1
 
-write.csv(checklist, '02_EDA/checklist.csv')
 
 # Filter only Accepted names
 checklist <- checklist %>% filter(gbif_status !="DOUBTFUL")
@@ -192,7 +195,6 @@ accepted_scientificName <- checklist %>%
   select(species, scientificName)
 
 length(unique(accepted_scientificName$species)) #There are 174 phylums
-
 
 # species present in checklist_group but not present in accepted_scientificName
 missing_species_2 <- setdiff( checklist_group$species, accepted_scientificName$species)
@@ -210,14 +212,10 @@ accepted_scientificName <- rbind(accepted_scientificName, data.frame(
   scientificName = "Metacallophyllis laciniata (Hudson) A.Vergés & L.Le Gall, 2017"
 ))
 
-write.csv(accepted_scientificName, '02_EDA/01_GBIF/accepted_scientificName.csv')
 
 # Join accepted scientificName
 data <- data %>%
   left_join(accepted_scientificName %>% rename(accepted_scientificName = scientificName), by = "species")
-
-write.csv(data, '01_DATA/03_GBIF/df_gbif_taxonomic.csv')
-
 
 
 ###===================================================================================================================================### 
@@ -257,8 +255,6 @@ data <- clean_coordinates(x = data,
                           value = "clean")
 
 nrow(data) # 685918
-write.csv(data, '01_DATA/03_GBIF/data_clean_coordinates.csv')
-
 
 # 2. Check coordinates precision: ----
 
@@ -277,8 +273,6 @@ data <- cbind(data, lonDigits)
 # Filter coordinates with 1 or more digit places
 data <- data[latDigits > 0 & lonDigits > 0, ]
 nrow(data) # 682871
-
-
 
 # 3. Check coordinates values with rounded decimals: ----
 
@@ -300,46 +294,16 @@ data <- clean_coordinates(x = data,
 
 nrow(data) # 389417
 
-write.csv(data, '01_DATA/03_GBIF/data_clean_coordinates_v1.csv',row.names=FALSE)
-
-
 rm(accepted_scientificName, checklist, checklist_group, flags, gbif_check, gbif_stand, list_species, latDigits, lonDigits)
 
 
+#------------------------------
 # 4. Check position of coordinates: ----
 
-
-# The correct location of the records in the corresponding habitat, in this case the marine habitat, has been verified and the records located on land have been eliminated. 
-# To do this, the cc_sea() function of the CoordinateCleaner package was initially used to mark the records according to whether they are marine or terrestrial. 
-# However, many of the records were incorrectly classified as terrestrial using this function,
-# so a global terrestrial base map in vector format was used to filter the marine records from the continental ones.  
-# After this step the number of records is 307,441.
-
-
-# # Are coordinates placed in correct habitat (sea / land)?
-# sea_flags <- cc_sea(x = data,
-#                     lon = "decimalLongitude",
-#                     lat = "decimalLatitude",
-#                     value = "flagged")
-# 
-# data_terra <- data[sea_flags, ]
-# nrow(data_terra) # 217494
-# 
-# #write.table(data_terra, '01_DATA/data_terra.csv', sep="\t", row.names=FALSE)
-# write.csv(data_terra, '01_DATA/data_terra_v1.csv', row.names=FALSE)
-# 
-# data_sea <- data[!sea_flags, ]
-# nrow(data_sea) # 367775
-# 
-# #write.table(data_sea, '01_DATA/data_sea_.csv', sep="\t", row.names=FALSE)
-# write.csv(data_sea, '01_DATA/data_sea_v1.csv', row.names=FALSE)
-
-#------------------------------
 # Using Base Map to filter ----
 
 data<- read.csv('01_DATA/03_GBIF/data_clean_coordinates_v1.csv')
 data_sf <- st_as_sf(data, coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)
-
 
 base_africa <- st_read("01_DATA/shapefiles/capas_basemap/base_africa.shp")
 base_asia <- st_read("01_DATA/shapefiles/capas_basemap/base_asia.shp")
@@ -362,7 +326,6 @@ inter_matrix <- st_intersects(data_sf,n_america, sparse = FALSE)
 # Create a logical vector that is TRUE if the record intersects (at least one polygon).
 land_flags <- apply(inter_matrix, 1, any)
 
-
 records_land_africa <- data_sf[land_flags, ]
 records_land_asia <- data_sf[land_flags, ]
 records_land_antarctic <- data_sf[land_flags, ]
@@ -373,15 +336,15 @@ records_land_europe <- data_sf[land_flags, ]
 records_land_canada <- data_sf[land_flags, ]
 records_land_n_america_c <- data_sf[land_flags, ]
 
-write.csv(records_land_africa, '01_DATA/records_sea_land/records_land_africa.csv')
-write.csv(records_land_asia, '01_DATA/records_sea_land/records_land_asia.csv')
-write.csv(records_land_antarctic, '01_DATA/records_sea_land/records_land_antarctic.csv')
-write.csv(records_land_australian, '01_DATA/records_sea_land/records_land_australian.csv')
-write.csv(records_land_s_america, '01_DATA/records_sea_land/records_s_america.csv')
-#write.csv(records_land_n_america, '01_DATA/records_sea_land/records_land_n_america.csv')
-write.csv(records_land_europe, '01_DATA/records_sea_land/records_land_europe.csv')
-write.csv(records_land_canada, '01_DATA/records_sea_land/records_land_canada.csv')
-write.csv(records_land_n_america_c, '01_DATA/records_sea_land/records_land_n_america_c.csv')
+# write.csv(records_land_africa, '01_DATA/records_sea_land/records_land_africa.csv')
+# write.csv(records_land_asia, '01_DATA/records_sea_land/records_land_asia.csv')
+# write.csv(records_land_antarctic, '01_DATA/records_sea_land/records_land_antarctic.csv')
+# write.csv(records_land_australian, '01_DATA/records_sea_land/records_land_australian.csv')
+# write.csv(records_land_s_america, '01_DATA/records_sea_land/records_s_america.csv')
+# #write.csv(records_land_n_america, '01_DATA/records_sea_land/records_land_n_america.csv')
+# write.csv(records_land_europe, '01_DATA/records_sea_land/records_land_europe.csv')
+# write.csv(records_land_canada, '01_DATA/records_sea_land/records_land_canada.csv')
+# write.csv(records_land_n_america_c, '01_DATA/records_sea_land/records_land_n_america_c.csv')
 
 records_land_africa <- read.csv('01_DATA/records_sea_land/records_land_africa.csv')
 records_land_asia <- read.csv('01_DATA/records_sea_land/records_land_asia.csv')
@@ -416,8 +379,6 @@ common_ids <- intersect(data$gbifID, data_land$gbifID)
 #length(common_ids) # 81976
 data_sea <- anti_join(data, data_land, by = "gbifID")
 #nrow(data_sea) # 307441
-write.csv(data_sea, '01_DATA/03_GBIF/data_sea_base_map.csv',row.names=FALSE)
-
 
 
 ###===================================================================================================================================###
@@ -462,9 +423,14 @@ data$date <- as.Date(paste(data$day, data$month, data$year, sep = "/"), format =
 
 data <- data %>% filter(year >= 1950)
 # nrow(data) # 287181
-write.csv(data, '01_DATA/03_GBIF/GBIF_data_sea_base_map_1950.csv',row.names=FALSE)
 
 
+write.csv(
+  occurrences_clean,
+  here("data", "interim",
+       "GBIF_data_sea_base_map_1950.csv"),
+  row.names = FALSE
+)
 
 ###===================================================================================================================================###
 ### DUPLICATES
