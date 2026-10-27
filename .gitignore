@@ -118,3 +118,7 @@ desktop.ini
 *.bak
 *.swp
 *~
+
+# Local RStudio project files
+*.Rproj
+.Rproj.user/
