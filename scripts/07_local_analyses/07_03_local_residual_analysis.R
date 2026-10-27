@@ -3,41 +3,55 @@
 # ANALISIS RESIDUOS LOCALES
 # ============================================================
 
+# Reorganizado desde 04_Analisis_residuos_locales.R.
+# Los calculos y parametros originales se conservan sin validacion numerica.
+
 library(tidyverse)
 library(dplyr)
 library(scales)
+library(here)
 
 # ============================================================
-# 1. DEFINIR RUTAS
+# 1. RUTAS RELATIVAS AL REPOSITORIO
 # ============================================================
 
+local_cooccurrence <- here("data", "processed", "local_analyses", "norway", "cooccurrence_matrices")
+residuals_dir <- here("results", "local_analyses", "expected_vs_observed")
 
-#local = "__CONFIGURE_PATH_01__"
-local = "__CONFIGURE_PATH_02__"
+# Entrada derivada para el analisis ambiental de Noruega (07_04).
+processed_dir <- here("data", "processed", "local_analyses", "norway")
+# Estadisticas y figura del analisis local.
+results_dir <- here("results", "local_analyses", "residuals")
+figures_dir <- file.path(results_dir, "figures")
+dir.create(processed_dir, recursive = TRUE, showWarnings = FALSE)
+dir.create(results_dir, recursive = TRUE, showWarnings = FALSE)
+dir.create(figures_dir, recursive = TRUE, showWarnings = FALSE)
 
-local_cooccurrence <- paste0(local, "/02_DATA_GENOVEVA/01_outputs/cooccurrence_matrices")
-global_matrix_dir = paste0(local,"/Niche_bentic_species/05_Results_Mantel_Test/01_Matrix")
-residuals = paste0(local,"/02_DATA_GENOVEVA/01_outputs/Mantel_results")
-save_path=paste0(local,"/02_DATA_GENOVEVA//01_outputs/local_residuals")
-dir.create(save_path, recursive = TRUE, showWarnings = FALSE)
-
-
-#write.csv(all_pairs,paste0(save_path, "/residuals_diff_obs_exp.csv"), row.names = TRUE)
+required_inputs <- c(
+  file.path(local_cooccurrence, "presence_absence_5m.csv"),
+  file.path(local_cooccurrence, "presence_absence_40m.csv"),
+  file.path(local_cooccurrence, "presence_absence_400m.csv"),
+  file.path(residuals_dir, "residuals_diff_obs_exp.csv")
+)
+missing_inputs <- required_inputs[!file.exists(required_inputs)]
+if (length(missing_inputs) > 0L) {
+  stop("Faltan archivos de entrada:\n", paste(missing_inputs, collapse = "\n"))
+}
 
 # ============================================================
 # 2. CARGAR MATRICES PRESENCIA-AUSENCIA LOCALES
 # ============================================================
 
 pa_5m_raw <- read.csv(
-  paste0(local_cooccurrence, "/presence_absence_5m.csv")
+  file.path(local_cooccurrence, "presence_absence_5m.csv")
 )
 
 pa_40m_raw <- read.csv(
-  paste0(local_cooccurrence, "/presence_absence_40m.csv")
+  file.path(local_cooccurrence, "presence_absence_40m.csv")
 )
 
 pa_400m_raw <- read.csv(
-  paste0(local_cooccurrence, "/presence_absence_400m.csv")
+  file.path(local_cooccurrence, "presence_absence_400m.csv")
 )
 
 head(pa_400m_raw)
@@ -47,7 +61,7 @@ summary(pa_5m_raw)
 # ============================================================
 
 local_residuals <- read.csv(
-  paste0(residuals, "/residuals_diff_obs_exp.csv")
+  file.path(residuals_dir, "residuals_diff_obs_exp.csv")
 )
 
 head(local_residuals)
@@ -102,6 +116,8 @@ local_residuals$sp1 <- clean_sp_names(local_residuals$sp1)
 local_residuals$sp2 <- clean_sp_names(local_residuals$sp2)
 
 head(local_residuals)
+# Se conserva la eliminacion de la primera columna del CSV historico.
+# Revisar su correspondencia con el formato exportado por 07_02 antes de ejecutar.
 local_residuals <- local_residuals[ ,-1]
 names(local_residuals)
 
@@ -204,7 +220,7 @@ n_communiy <- community_resid_all %>%
 
 n_communiy
 
-write.csv(n_communiy, paste0(save_path, "/info_n_community.csv"),row.names = F)
+write.csv(n_communiy, file.path(results_dir, "info_n_community.csv"),row.names = F)
 
 # # A tibble: 3 × 5
 # scale total no_pairs with_pairs pct_no_pairs
@@ -221,7 +237,7 @@ community_resid_all_filt <- community_resid_all %>%
 summary(community_resid_all_filt$mean_expected_prob)
 head(community_resid_all_filt)
 
-write.csv(community_resid_all_filt, paste0(save_path, "/community_expected_cooccurrence_probability_all_filt.csv"),row.names = F)
+write.csv(community_resid_all_filt, file.path(processed_dir, "community_expected_cooccurrence_probability_all_filt.csv"),row.names = F)
 
 
 kruskal.test(
@@ -286,5 +302,5 @@ boxplot <- ggplot(
 
 boxplot
 
-ggsave("Mean_expected_cooccurrence_probability_boxplot.png", plot = boxplot, width = 7, height = 5, units = "in", dpi = 600)
+ggsave(file.path(figures_dir, "Mean_expected_cooccurrence_probability_boxplot.png"), plot = boxplot, width = 7, height = 5, units = "in", dpi = 600)
 

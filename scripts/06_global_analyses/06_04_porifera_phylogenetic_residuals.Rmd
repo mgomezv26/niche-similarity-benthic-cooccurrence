@@ -19,78 +19,70 @@ lang: es
 ---
 
 
-```{r}
+```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
 
 
-# LOAD PAKAGES
+# LOAD PACKAGES
 ```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 library(readxl)
 library(dplyr)
 library(vegan)
 library(patchwork)
+library(here)
 ```
 
-```{r}
-local = "__CONFIGURE_PATH_01__"
-phylo_dir = paste0(local, "/10_Phylo/01_Porifera_COI")
-save_path=paste0(local,"/05_Results_Mantel_Test")
-save_path_matrix = paste0(local,"/05_Results_Mantel_Test/01_Matrix")
+```{r paths}
+# Project-root relative paths. Place the historical inputs in these locations.
+phylo_dir <- here("data", "raw", "phylogenetics", "porifera")
+taxonomy_file <- here("data", "interim", "phylogenetics", "species_hv_names_tax.xlsx")
+mantel_dir <- here("results", "global_analyses", "mantel")
+output_dir <- here("results", "global_analyses", "phylogenetic_residuals", "porifera")
+figures_dir <- file.path(output_dir, "figures")
+dir.create(figures_dir, recursive = TRUE, showWarnings = FALSE)
 
+required_files <- c(
+  file.path(phylo_dir, "Porifera_Distance_Matrix_COI_MEGA.xlsx"),
+  taxonomy_file,
+  file.path(mantel_dir, "species_order.csv"),
+  file.path(mantel_dir, "mantel_residuals_schoener.rds"),
+  file.path(mantel_dir, "mantel_residuals_jaccard.rds")
+)
+missing_files <- required_files[!file.exists(required_files)]
+if (length(missing_files)) {
+  stop("Required input files are missing:\n", paste(missing_files, collapse = "\n"))
+}
 ```
 
 
-# 0. Leer species_order exportado previamente
+# Leer species_order exportado previamente
 
 ```{r}
-# 0. Leer species_order exportado previamente
 species_order <- read.csv(
-  file.path(save_path, "species_order.csv"),
+  file.path(mantel_dir, "species_order.csv"),
   stringsAsFactors = FALSE
 )[[1]]
 ```
 
-# 1. Leer tabla con species + phylum
+# Leer tabla con species + phylum
 
 ```{r}
-library(readxl)
-species_hv_names_tax_Porifera <- read_excel("03_Hypervolumes/06_Hipervolume_results/species_hv_names_tax.xlsx", 
-    sheet = "Porifera")
+species_hv_names_tax_Porifera <- read_excel(taxonomy_file, sheet = "Porifera")
 head(species_hv_names_tax_Porifera)
-
-species_hv_names_tax_Cnidaria <- read_excel("03_Hypervolumes/06_Hipervolume_results/species_hv_names_tax.xlsx", 
-    sheet = "Cnidaria")
-head(species_hv_names_tax_Cnidaria)
 ```
 
-# 2. Leer residuos
+# Leer residuos
 
 ```{r}
-# 2. Leer residuos
-resid_schoener <- readRDS(file.path(save_path, "mantel_residuals_schoener.rds"))
-resid_jaccard <- readRDS(file.path(save_path, "/mantel_residuals_jaccard.rds"))
+resid_schoener <- readRDS(file.path(mantel_dir, "mantel_residuals_schoener.rds"))
+resid_jaccard <- readRDS(file.path(mantel_dir, "mantel_residuals_jaccard.rds"))
 ```
 
-# 3. Convertir residuos a matriz
+# CNIDARIA
 
-```{r}
-# 3. Convertir residuos a matriz
-resid_mat <- as.matrix(resid_schoener$residuals)
-head(resid_mat)
-
-#asignar species_order
-rownames(resid_mat) <- species_order
-colnames(resid_mat) <- species_order
-
-resid_mat <- (resid_mat + t(resid_mat)) / 2
-diag(resid_mat) <- 0
-```
-
-# PORIFERA
-
-## Leer df largo de matriz genética Porifera
+## Leer matriz genética COI de Porifera
 
 ```{r}
 genetic_long <- read_excel(
@@ -101,7 +93,6 @@ genetic_long <- read_excel(
 head(genetic_long)
 names(genetic_long)
 ```
-
 ## Preparar tabla código COI -> especie
 
 ```{r}
@@ -111,13 +102,16 @@ coi_map <- species_hv_names_tax_Porifera %>%
   filter(COI == "Yes", !is.na(COI_ID)) %>%
   mutate(
     species = norm(species),
-    COI_ID = norm(COI_ID),
-    COI_ID_dot = paste0(COI_ID, ".1")
+    COI_ID = norm(COI_ID)
   ) %>%
-  select(species, COI_ID, COI_ID_dot)
+  select(species, COI_ID)
 
+if (anyDuplicated(coi_map$COI_ID)) {
+  stop("COI_ID must uniquely identify a Porifera species in the mapping table.")
+}
 coi_map
 ```
+
 
 ## Limpiar matriz genética larga
 
@@ -137,8 +131,17 @@ genetic_long_clean <- genetic_long %>%
   left_join(coi_map, by = c("code2" = "COI_ID")) %>%
   rename(sp2 = species) %>%
   select(sp1, sp2, genetic_dist)
-```
 
+# Unmatched COI identifiers would otherwise create NA names in the genetic matrix.
+if (anyNA(genetic_long_clean$sp1) || anyNA(genetic_long_clean$sp2)) {
+  print(genetic_long_clean %>% filter(is.na(sp1) | is.na(sp2)))
+  stop("Some COI identifiers could not be mapped to species; check the mapping table.")
+}
+if (!is.numeric(genetic_long_clean$genetic_dist) ||
+    any(!is.finite(genetic_long_clean$genetic_dist))) {
+  stop("Genetic distances must be finite numeric values.")
+}
+```
 
 ```{r}
 genetic_long_clean %>%
@@ -179,14 +182,17 @@ for(i in seq_len(nrow(genetic_long_clean))) {
 
 diag(gen_mat) <- 0
 
-gen_mat[1:5, 1:5]
+gen_mat[seq_len(min(5, nrow(gen_mat))), seq_len(min(5, ncol(gen_mat)))]
 ```
 
-## Función simple para convertir residuos a matriz con nombres
+## Convertir residuos a matriz con nombres
 
 ```{r}
 make_resid_mat <- function(resid_obj, species_order) {
   mat <- as.matrix(resid_obj$residuals)
+  if (nrow(mat) != length(species_order) || ncol(mat) != length(species_order)) {
+    stop("Residual matrix dimensions do not match species_order.csv")
+  }
   rownames(mat) <- species_order
   colnames(mat) <- species_order
   mat <- (mat + t(mat)) / 2
@@ -204,7 +210,7 @@ resid_jaccard_mat  <- make_resid_mat(resid_jaccard, species_order)
 head(resid_schoener_mat)
 ```
 
-## Alinear residuos con especies Porifera con COI
+## Alinear residuos con especies de Porifera con COI
 
 ```{r}
 species_common_schoener <- Reduce(intersect, list(
@@ -221,33 +227,37 @@ species_common_jaccard <- Reduce(intersect, list(
 
 length(species_common_schoener)
 species_common_schoener
+if (length(species_common_schoener) < 3L || length(species_common_jaccard) < 3L) {
+  stop("At least three common species are required for each Mantel test.")
+}
 ```
 
 
 ## Subset final
 
 ```{r}
-resid_schoener_pori <- resid_schoener_mat[species_common_schoener, species_common_schoener]
-resid_jaccard_pori  <- resid_jaccard_mat[species_common_jaccard, species_common_jaccard]
+resid_schoener_porifera <- resid_schoener_mat[species_common_schoener, species_common_schoener]
+resid_jaccard_porifera  <- resid_jaccard_mat[species_common_jaccard, species_common_jaccard]
 
-gen_pori_schoener <- gen_mat[species_common_schoener, species_common_schoener]
-gen_pori_jaccard  <- gen_mat[species_common_jaccard, species_common_jaccard]
+gen_porifera_schoener <- gen_mat[species_common_schoener, species_common_schoener]
+gen_porifera_jaccard  <- gen_mat[species_common_jaccard, species_common_jaccard]
 ```
 
 
 ## Mantel: residuos vs distancia genética
 
 ```{r}
+set.seed(123) # Reproducible permutations; p-values may differ from the historical HTML.
 mantel_resid_gen_schoener <- mantel(
-  as.dist(resid_schoener_pori),
-  as.dist(gen_pori_schoener),
+  as.dist(resid_schoener_porifera),
+  as.dist(gen_porifera_schoener),
   permutations = 999,
   method = "pearson"
 )
 
 mantel_resid_gen_jaccard <- mantel(
-  as.dist(resid_jaccard_pori),
-  as.dist(gen_pori_jaccard),
+  as.dist(resid_jaccard_porifera),
+  as.dist(gen_porifera_jaccard),
   permutations = 999,
   method = "pearson"
 )
@@ -257,14 +267,14 @@ mantel_resid_gen_jaccard
 ```
 
 
-## Guardar matrices y resultados
+## Guardar residuos y resultados
+
+Estas salidas se guardan por separado de los residuos globales generados en `06_02`. La matriz genetica se reconstruye en memoria a partir del Excel original; no se duplica en CSV/RDS.
 
 ```{r}
-saveRDS(gen_mat, file.path(phylo_dir, "porifera_COI_genetic_distance_matrix_species_names.rds"))
-saveRDS(resid_schoener_pori, file.path(save_path, "resid_schoener_porifera_COI.rds"))
-saveRDS(resid_jaccard_pori, file.path(save_path, "resid_jaccard_porifera_COI.rds"))
+saveRDS(resid_schoener_porifera, file.path(output_dir, "resid_schoener_porifera_COI.rds"))
+saveRDS(resid_jaccard_porifera, file.path(output_dir, "resid_jaccard_porifera_COI.rds"))
 
-write.csv(gen_mat, file.path(phylo_dir, "porifera_COI_genetic_distance_matrix_species_names.csv"))
 
 mantel_summary <- tibble(
   metric = c("Schoener residuals", "Jaccard residuals"),
@@ -284,7 +294,7 @@ mantel_summary <- tibble(
 
 write.csv(
   mantel_summary,
-  file.path(save_path, "mantel_residuals_vs_COI_genetic_distance_porifera.csv"),
+  file.path(output_dir, "mantel_residuals_vs_COI_genetic_distance_porifera.csv"),
   row.names = FALSE
 )
 
@@ -299,8 +309,8 @@ mantel_summary
 get_upper <- function(mat) mat[upper.tri(mat)]
 
 df_plot_schoener <- data.frame(
-  schoener_resid = get_upper(resid_schoener_pori),
-  genetic = get_upper(gen_pori_schoener)
+  schoener_resid = get_upper(resid_schoener_porifera),
+  genetic = get_upper(gen_porifera_schoener)
 )
 
 plot_phylo_schoener <- ggplot(df_plot_schoener, aes(x = genetic, y = schoener_resid)) +
@@ -324,9 +334,9 @@ plot_phylo_schoener <- ggplot(df_plot_schoener, aes(x = genetic, y = schoener_re
 plot_phylo_schoener
 ```
 
-```{R}
+```{r}
 ggsave(
-  file.path(local, "06_Figures/plot_phylo_residuals_schoener.png"),
+  file.path(figures_dir, "plot_phylo_residuals_schoener_Porifera.png"),
   plot = plot_phylo_schoener,
   width = 10, height = 5, units = "in", dpi = 600
 )
@@ -334,8 +344,8 @@ ggsave(
 
 ```{r}
 df_plot_jaccard <- data.frame(
-  jaccard_resid = get_upper(resid_jaccard_pori),
-  genetic = get_upper(gen_pori_jaccard)
+  jaccard_resid = get_upper(resid_jaccard_porifera),
+  genetic = get_upper(gen_porifera_jaccard)
 )
 
 plot_phylo_jaccard <- ggplot(df_plot_jaccard, aes(x = genetic, y = jaccard_resid)) +
@@ -361,7 +371,7 @@ plot_phylo_jaccard
 
 ```{r}
 ggsave(
-  file.path(local, "06_Figures/plot_phylo_residuals_jaccard.png"),
+  file.path(figures_dir, "plot_phylo_residuals_jaccard_Porifera.png"),
   plot = plot_phylo_jaccard,
   width = 10, height = 5, units = "in", dpi = 600
 )
@@ -375,8 +385,12 @@ combined_plot
 
 ```{r}
 ggsave(
-  file.path(local, "06_Figures/plot_phylo_residuals_combined_plot.png"),
+  file.path(figures_dir, "plot_phylo_residuals_combined_plot_Porifera.png"),
   plot = combined_plot,
   width = 10, height = 5, units = "in", dpi = 600
 )
 ```
+
+
+
+

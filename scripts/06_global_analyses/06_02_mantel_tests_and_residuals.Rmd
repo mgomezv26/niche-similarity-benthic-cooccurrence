@@ -24,7 +24,7 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
 
 
-# LOAD PAKAGES
+# LOAD PACKAGES
 ```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 library(sf)
@@ -37,29 +37,41 @@ library(kableExtra)
 library(patchwork)
 ```
 
-# DEFINE THE WORKING DIRECTORY
+# PROJECT PATHS AND OUTPUT DIRECTORIES
 
-```{r}
-#local = "__CONFIGURE_PATH_01__"
-local = "__CONFIGURE_PATH_02__"
-niche_overlap_dir = paste0(local,"/03_Hypervolumes/06_Hipervolume_results")
-coocurrence_dir = paste0(local,"/04_Coocurrence")
+```{r paths}
+library(here)
 
-save_path=paste0(local,"/05_Results_Mantel_Test")
-save_path_matrix = paste0(local,"/05_Results_Mantel_Test/01_Matrix")
-save_path_figs = paste0(local,"/06_Figures")
+# These paths are relative to the repository root (marked by .here).
+niche_overlap_dir <- here("results", "hypervolumes", "overlap")
+schoener_dir <- here("results", "hypervolumes", "schoener")
+coocurrence_dir <- here("results", "global_analyses", "cooccurrence")
 
-setwd(local)
+save_path <- here("results", "global_analyses", "mantel")
+save_path_matrix <- file.path(save_path, "matrices")
+save_path_figs <- file.path(save_path, "figures")
+for (dir in c(save_path, save_path_matrix, save_path_figs)) {
+  dir.create(dir, recursive = TRUE, showWarnings = FALSE)
+}
 
+# Check required inputs before running lengthy tests.
+required_files <- c(
+  file.path(schoener_dir, "schoener_D_pairs_round_1_n_100000.csv"),
+  file.path(niche_overlap_dir, "pairwise_hypervolume_overlap_all_species.csv"),
+  file.path(coocurrence_dir, "jaccard_distance_matrix.rds")
+)
+missing_files <- required_files[!file.exists(required_files)]
+if (length(missing_files)) {
+  stop("Missing input files:\n", paste(missing_files, collapse = "\n"))
+}
 ```
-
 
 # LOAD DATA NICHE OVERLAP DATA
 
 ## Probabilistic niche overlap (Schoener’s D based on density distributions)
 
 ```{r}
-Schoener_overlap <- read.csv(paste0(niche_overlap_dir,"/02_Shoener/schoener_D_pairs_round_1_n_100000.csv"))
+Schoener_overlap <- read.csv(file.path(schoener_dir, "schoener_D_pairs_round_1_n_100000.csv"))
 head(Schoener_overlap)
 ```
 
@@ -125,7 +137,7 @@ write.csv(schoener_matrix,
 ## Geometric niche overlap (Jaccard index based on hypervolume intersections)
 
 ```{r}
-niche_overlap <- read.csv(paste0(niche_overlap_dir,"/pairwise_hypervolume_overlap_all_species.csv"))
+niche_overlap <- read.csv(file.path(niche_overlap_dir, "pairwise_hypervolume_overlap_all_species.csv"))
 head(niche_overlap)
 ```
 
@@ -251,8 +263,13 @@ write.csv(niche_distance_matrix,
 ### Co-occurrence dissimilarity matrix 
 # JACCARD DISTANCE MATRIX
 
-cooc_jac_matrix <- readRDS(paste0(coocurrence_dir,"/jaccard_distance_matrix.rds"))
-cooc_jac_df <- read.csv(paste0(coocurrence_dir,"/jaccard_distance_matrix_long_format.csv"))
+cooc_jac_matrix <- readRDS(file.path(coocurrence_dir, "jaccard_distance_matrix.rds"))
+cooc_long_file <- file.path(coocurrence_dir, "jaccard_distance_matrix_long_format.csv")
+cooc_jac_df <- if (file.exists(cooc_long_file)) {
+  read.csv(cooc_long_file)
+} else {
+  as.data.frame(as.table(cooc_jac_matrix))
+}
 ```
 
 ```{r}
@@ -307,6 +324,16 @@ write.csv(
   row.names = FALSE
 )
 
+if (length(species_order) < 2L) stop("Fewer than two common species across the four matrices.")
+if (anyNA(schoener_matrix_dist[species_order, species_order]) ||
+    anyNA(niche_jaccard_dist[species_order, species_order]) ||
+    anyNA(niche_distance_matrix[species_order, species_order]) ||
+    anyNA(cooc_jac_matrix[species_order, species_order])) {
+  stop("Missing values in the aligned distance matrices: inspect species labels and pair coverage.")
+}
+message("Common species: ", length(species_order),
+        "; unique pairs: ", choose(length(species_order), 2))
+
 schoener_dist <- as.dist(schoener_matrix_dist[species_order, species_order])
 niche_jd      <- as.dist(niche_jaccard_dist[species_order, species_order])
 niche_cent    <- as.dist(niche_distance_matrix[species_order, species_order])
@@ -315,10 +342,11 @@ cooc_mat      <- as.dist(cooc_jac_matrix[species_order, species_order])
 ```
 
 
-## Co-occurrence vs. probabilistic niche overlap (Schoener’s D) - Mentel test 1.
+## Co-occurrence vs. probabilistic niche overlap (Schoener’s D) - Mantel test 1.
 
 ```{r}
 # Co-occurrence vs. niche similarity (Jaccard)
+set.seed(123)  # reproducible permutations for the three tests
 mantel_schoener <- mantel(
   cooc_mat, schoener_dist,
   method = "pearson",
@@ -333,7 +361,7 @@ mantel_schoener
 
 Species with more similar ecological niches (according to Schoener D) tend to co-occur more frequently, but the effect is moderate.
 
-## Co-occurrence vs. geometric niche overlap (Jaccard) - Mentel test 2.
+## Co-occurrence vs. geometric niche overlap (Jaccard) - Mantel test 2.
 
 ```{r}
 # Co-occurrence vs. niche similarity (Jaccard)
@@ -350,7 +378,7 @@ mantel_jaccard
 Moderate positive correlation (almost strong). Niche overlap based on hypervolumes explains co-occurrence considerably better than Schoener D.
 
 
-## Co-occurrence vs. niche proximity (centroid distance) - Mentel test 3.
+## Co-occurrence vs. niche proximity (centroid distance) - Mantel test 3.
 
 ```{r}
 mantel_centroid <- mantel(
@@ -387,7 +415,7 @@ write.csv(mantel_df,
 
 ```{r}
 plot1 <- ggplot(mantel_df, aes(x = schoener_d, y = cooc)) +
-  geom_point(alpha = 0.5, size = 1, , shape = 16, color = "#80cdc1") + # puntos azules con transparencia
+  geom_point(alpha = 0.5, size = 1, shape = 16, color = "#80cdc1") + # puntos azules con transparencia
   geom_smooth(method = "lm", se = FALSE, color = "#018571", linewidth = 1) +
   labs(title = "Niche overlap (Schoener’s D)",
      x = "Niche distance (1 - Schoener D overlap)",
@@ -408,7 +436,7 @@ ggsave(paste0(save_path_figs, "/plot1_nichesimilarity_DSchoener_co_mentel.png"),
 
 ```{r}
 plot2 <- ggplot(mantel_df, aes(x = niche_jaccard, y = cooc)) +
-  geom_point(alpha = 0.5, size = 1, , shape = 16, color = "#a6cee3") + # puntos azules con transparencia
+  geom_point(alpha = 0.5, size = 1, shape = 16, color = "#a6cee3") + # puntos azules con transparencia
   geom_smooth(method = "lm", se = FALSE, color = "#1f78b4", linewidth = 1) +
   labs(title = "Niche overlap (Hypervolume Jaccard)",
      x = "Niche distance (1 - Jaccard overlap)",
@@ -470,6 +498,10 @@ ggsave(paste0(save_path_figs, "/Combined_plot_coocurrence_niche.png"),
 ```
 
 # PAIRWISE DEVIATIONS FROM THE FITTED GLOBAL NICHE DISTANCE–CO-OCCURRENCE RELATIONSHIP
+
+The residuals use co-occurrence Jaccard **distance** as the response.
+Positive residuals therefore indicate **less** co-occurrence than expected,
+whereas negative residuals indicate **more** co-occurrence than expected.
 
 ```{r}
 # Residuos de los Mantel tests

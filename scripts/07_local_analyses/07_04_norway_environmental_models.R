@@ -1,25 +1,52 @@
+# ============================================================================
+# 07_04_norway_environmental_models.R
+# ============================================================================
 
+# Local environmental relationships with expected co-occurrence (5, 40, 400 m).
+# Scientific model formulae, filters, and AIC selection retained from source.
+# Historical numerical equivalence has NOT been validated.
+# Output: correlation CSV, model summary CSV, coefficient plot PDF and PNG.
+# Model selection (dredge), VIF and importance heatmap are calculated in memory,
+# as in the original script; they are not exported.
+
+library(here)
 library(dplyr)
 library(readr)
 library(terra)
 library(tibble)
+library(corrplot)
+library(car)
+library(ggplot2)
+library(broom)
+library(MuMIn)
+library(tidyr)
 
-#local <- "__CONFIGURE_PATH_01__"
-local = "__CONFIGURE_PATH_02__"
+# Paths relative to repository root (the .here marker).
+# The expected-cooccurrence table is an INPUT from another local workflow,
+# not produced by this script. Verify its generating script before execution.
+env_file <- here("data", "raw", "local_analyses", "norway", "environmental", "env_full-001.tif")
+prob_file <- here("data", "processed", "local_analyses", "norway",
+                  "community_expected_cooccurrence_probability_all_filt.csv")
+sample_files <- c(
+  "5m" = here("data", "raw", "local_analyses", "norway", "samples", "5m", "sample_info_5m_ready.csv"),
+  "40m" = here("data", "raw", "local_analyses", "norway", "samples", "40m", "sample_info_40m_ready.csv"),
+  "400m" = here("data", "raw", "local_analyses", "norway", "samples", "400m", "sample_info.csv")
+)
+output_dir <- here("results", "local_analyses", "norway", "environmental_models")
+figures_dir <- file.path(output_dir, "figures")
+dir.create(figures_dir, recursive = TRUE, showWarnings = FALSE)
 
-env_dir <- paste0(local, "/data/EnvironmentalData")
-data_dir_5m <- paste0(local, "/data/5m")
-data_dir_40m <- paste0(local, "/data/40m")
-data_dir_400m <- paste0(local, "/data/400m")
-mean_prob_dir  <- paste0(local, "/01_outputs/local_residuals")
-
-
+inputs <- c(env_file, prob_file, sample_files)
+missing_inputs <- inputs[!file.exists(inputs)]
+if (length(missing_inputs) > 0L) {
+  stop("Missing required input files:\n", paste(missing_inputs, collapse = "\n"))
+}
 
 # ============================================================
 # OCEANOGRAPHIC VARIABLES
 # ============================================================
 
-env <- rast(paste0(env_dir, "/env_full-001.tif"))
+env <- rast(env_file)
 
 env_sel <- env[[c(
   "bathy200_sed",
@@ -40,7 +67,7 @@ env_sel <- env[[c(
 # 2. MEAN EXPECTED CO-OCURRENCE PROBABILITY DATA
 # ============================================================
 
-mean_prob_df <- read_csv(paste0(mean_prob_dir, "/community_expected_cooccurrence_probability_all_filt.csv"))
+mean_prob_df <- read_csv(prob_file, show_col_types = FALSE)
 
 mean_prob_5m <- mean_prob_df%>% filter(scale=="5m")
 mean_prob_40m <- mean_prob_df%>% filter(scale=="40m")
@@ -48,13 +75,13 @@ mean_prob_400m <- mean_prob_df%>% filter(scale=="400m")
 
 mean_prob_df
 
-summary(mean_expected_prob ~ scale)
+summary(mean_prob_df$mean_expected_prob)
 
 # ============================================================
 # 3. 5M 
 # ============================================================
 
-sample_5m <- read_csv(paste0(data_dir_5m, "/sample_info_5m_ready.csv"))
+sample_5m <- read_csv(sample_files[["5m"]], show_col_types = FALSE)
 
 coords_5m <- sample_5m %>%
   rename(
@@ -71,7 +98,7 @@ coords_5m <- sample_5m %>%
 # extraer datos del raster
 env_5m <- terra::extract(
   env_sel,
-  coords_5m[, c("X","Y")]
+  as.matrix(coords_5m[, c("X", "Y")])
 )
 
 env_5m <- bind_cols(
@@ -147,7 +174,7 @@ hist(mean_prob_5m_env_filt$mean_expected_prob,
 # 4. 40 M 
 # ============================================================
 
-sample_40m <- read_csv(paste0(data_dir_40m, "/sample_info_40m_ready.csv"))
+sample_40m <- read_csv(sample_files[["40m"]], show_col_types = FALSE)
 
 coords_40m <- sample_40m %>%
   rename(
@@ -164,7 +191,7 @@ coords_40m <- sample_40m %>%
 # extraer datos del raster
 env_40m <- terra::extract(
   env_sel,
-  coords_40m[, c("X","Y")]
+  as.matrix(coords_40m[, c("X", "Y")])
 )
 
 env_40m <- bind_cols(
@@ -241,7 +268,7 @@ hist(mean_prob_40m_env_filt$mean_expected_prob,
 # 5. 400 M 
 # ============================================================
 
-sample_400m <- read_csv(paste0(data_dir_400m, "/sample_info.csv"))
+sample_400m <- read_csv(sample_files[["400m"]], show_col_types = FALSE)
 
 coords_400m <- sample_400m %>%
   rename(
@@ -258,7 +285,7 @@ coords_400m <- sample_400m %>%
 # extraer datos del raster
 env_400m <- terra::extract(
   env_sel,
-  coords_400m[, c("X","Y")]
+  as.matrix(coords_400m[, c("X", "Y")])
 )
 
 env_400m <- bind_cols(
@@ -363,10 +390,7 @@ cor_all <- cor(env_vars_all, use = "pairwise.complete.obs")
 
 round(cor_all, 2)
 
-write.csv(cor_all, paste0(env_dir, "cor_vars_sel.csv"))
-
-library(corrplot)
-
+write.csv(cor_all, file.path(output_dir, "cor_vars_sel.csv"))
 
 colnames(cor_all) <- c(
   "Bathymetry",
@@ -406,8 +430,6 @@ plot
 
 # VIF
 
-library(car)
-
 lm_full_all <- lm(
   mean_expected_prob ~
     bathy200_sed +
@@ -440,11 +462,6 @@ sort(vif_values, decreasing = TRUE)
 # ============================================================
 # 7. MODELOS CON VARIABLES ESTANDARIZADAS
 # ============================================================
-
-library(dplyr)
-library(ggplot2)
-library(broom)
-library(car)
 
 mean_prob_all_mod <- mean_prob_all %>%
   rename(
@@ -547,7 +564,7 @@ model_summary <- data.frame(
 
 model_summary
 write.csv(model_summary,
-          "model_summary_local_environment_scaled.csv",
+          file.path(output_dir, "model_summary_local_environment_scaled.csv"),
           row.names = FALSE)
 
 
@@ -555,10 +572,6 @@ write.csv(model_summary,
 # ============================================================
 # 9. Figura principal tipo Ecography: coeficientes estandarizados
 # ============================================================
-library(broom)
-library(ggplot2)
-library(dplyr)
-
 # ============================================================
 # Extraer coeficientes de los 3 modelos
 # ============================================================
@@ -683,14 +696,14 @@ coef_plot
 
 
 ggsave(
-  "Environmental_effects_coefplot.pdf",
+  file.path(figures_dir, "Environmental_effects_coefplot.pdf"),
   coef_plot,
   width = 8,
   height = 6
 )
 
 ggsave(
-  "Environmental_effects_coefplot.png",
+  file.path(figures_dir, "Environmental_effects_coefplot.png"),
   coef_plot,
   width = 8,
   height = 6,
@@ -706,8 +719,7 @@ summary(lm_400m_std)
 # 10. MODEL SELECTION (AIC)
 # ============================================================
 
-library(MuMIn)
-
+old_na_action <- getOption("na.action")
 options(na.action = "na.fail")
 
 #---------------------------------------------
@@ -807,10 +819,6 @@ imp_df <- data.frame(
 
 imp_df[is.na(imp_df)] <- 0
 
-library(tidyr)
-library(dplyr)
-library(ggplot2)
-
 imp_long <- imp_df %>%
   pivot_longer(
     cols = c(X5.m, X40.m, X400.m),
@@ -851,3 +859,6 @@ importance_plot <- ggplot(
 
 importance_plot
 
+
+# Restore the session option changed for MuMIn::dredge().
+options(na.action = old_na_action)

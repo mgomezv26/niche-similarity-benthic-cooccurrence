@@ -42,17 +42,31 @@ library(patchwork)
 # DEFINE THE WORKING DIRECTORY
 
 ```{r}
-local = "__CONFIGURE_PATH_01__"
-#local = "__CONFIGURE_PATH_02__"
+library(here)
 
-local_coocurrence <- paste0(local, "/02_DATA_GENOVEVA/01_outputs/cooccurrence_matrices")
-global_matrix_dir = paste0(local,"/Niche_bentic_species/05_Results_Mantel_Test/01_Matrix")
+# Global niche matrices are produced by 06_02_mantel_tests_and_residuals.Rmd.
+global_matrix_dir <- here("results", "global_analyses", "mantel", "matrices")
 
-save_path=paste0(local,"/02_DATA_GENOVEVA/01_outputs/Mantel_results")
-save_path_matrix=paste0(local,"/02_DATA_GENOVEVA/01_outputs/Mantel_results/01_Matrix")
+# Local community Jaccard-distance matrices are pre-existing inputs.
+# Their original generation must still be documented.
+local_coocurrence <- here("data", "processed", "local_analyses", "norway", "cooccurrence_matrices")
 
-list_global_species = paste0(local, "/02_DATA_GENOVEVA/species_hv_names_tax.xlsx")
-setwd(local)
+# Script outputs: paired expected/observed co-occurrence and figures.
+save_path <- here("results", "local_analyses", "expected_vs_observed")
+save_path_figs <- file.path(save_path, "figures")
+dir.create(save_path_figs, recursive = TRUE, showWarnings = FALSE)
+
+required_files <- c(
+  file.path(global_matrix_dir, "schoener_matrix.csv"),
+  file.path(global_matrix_dir, "niche_jaccard_matrix.csv"),
+  file.path(local_coocurrence, "jaccard_distance_5m.csv"),
+  file.path(local_coocurrence, "jaccard_distance_40m.csv"),
+  file.path(local_coocurrence, "jaccard_distance_400m.csv")
+)
+missing_files <- required_files[!file.exists(required_files)]
+if (length(missing_files)) {
+  stop("Missing input files:\n", paste(missing_files, collapse = "\n"))
+}
 ```
 
 
@@ -386,7 +400,7 @@ all_pairs <- bind_rows(
 head(all_pairs)
 
 # === Export CSV format
-write.csv(all_pairs,paste0(save_path, "/residuals_diff_obs_exp.csv"),
+write.csv(all_pairs, file.path(save_path, "residuals_diff_obs_exp.csv"),
           row.names = TRUE)
 ```
 
@@ -417,7 +431,7 @@ plot
 ```
 
 ```{r}
-ggsave("global_niche_vs_local_cooccurrence_scalesv1.png", plot = plot, width = 7, height = 5, units = "in", dpi = 600)
+ggsave(file.path(save_path_figs, "global_niche_vs_local_cooccurrence_scalesv1.png"), plot = plot, width = 7, height = 5, units = "in", dpi = 600)
 ```
 
 
@@ -565,7 +579,7 @@ fig_quantile <- ggplot() +
 fig_quantile
 ```
 ```{r}
-ggsave("global_niche_vs_local_cooccurrence_scales_facet_Quantile.png", plot = fig_quantile, width = 7, height = 5, units = "in", dpi = 600)
+ggsave(file.path(save_path_figs, "global_niche_vs_local_cooccurrence_scales_facet_Quantile.png"), plot = fig_quantile, width = 7, height = 5, units = "in", dpi = 600)
 
 ```
 
@@ -665,7 +679,7 @@ ggsave("global_niche_vs_local_cooccurrence_scales_facet_Quantile.png", plot = fi
 <!-- ``` -->
 
 <!-- ```{r} -->
-<!-- ggsave("global_niche_vs_local_cooccurrence_scales_facet.png", plot = p, width = 7, height = 5, units = "in", dpi = 600) -->
+<!-- ggsave(file.path(save_path_figs, "global_niche_vs_local_cooccurrence_scales_facet.png"), plot = p, width = 7, height = 5, units = "in", dpi = 600) -->
 <!-- ``` -->
 
 
@@ -757,7 +771,7 @@ residual_boxplot
 ```
 
 ```{r}
-ggsave("residual_boxplot.png", plot = residual_boxplot, width = 7, height = 5, units = "in", dpi = 600)
+ggsave(file.path(save_path_figs, "residual_boxplot.png"), plot = residual_boxplot, width = 7, height = 5, units = "in", dpi = 600)
 ```
 
 
