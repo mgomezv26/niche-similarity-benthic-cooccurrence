@@ -1,8 +1,15 @@
-# External scientific data and generated products; select small public inputs explicitly later
-/data/**
-!/data/**/
-!/data/**/README.md
-!/data/**/.gitkeep
+
+# ============================================================
+# Scientific data and generated results
+# ============================================================
+
+# Local datasets: raw, interim and processed
+/data/
+
+# Generated scientific results, including species hypervolumes
+/results/
+
+# Large scientific file formats
 *.tif
 *.tiff
 *.nc
@@ -27,19 +34,26 @@
 *.h5
 *.hdf5
 
-# Existing validations remain local until explicitly selected
-/results/validation/
-/results/runs/
+# ============================================================
+# Other local data and generated figures
+# ============================================================
+
 /figures/generated/
 /inputs/
 /reference/
 /config/paths.local.json
 
-# Local manuscript draft
+# ============================================================
+# Local manuscript drafts
+# ============================================================
+
 /MS_Bentic_*review.docx
 ~$*.docx
 
+# ============================================================
 # Credentials and private configuration
+# ============================================================
+
 .env
 .env.*
 !.env.example
@@ -66,7 +80,10 @@ credentials.*
 *.p12
 *.pfx
 
+# ============================================================
 # R, Python and notebook caches
+# ============================================================
+
 .Rhistory
 .Rapp.history
 .Rproj.user/
@@ -86,7 +103,10 @@ _cache/
 .quarto/
 .cache/
 
-# Local editors, operating system files, logs and temporary files
+# ============================================================
+# Editors, operating system files and temporary files
+# ============================================================
+
 .vscode/
 .idea/
 .DS_Store
