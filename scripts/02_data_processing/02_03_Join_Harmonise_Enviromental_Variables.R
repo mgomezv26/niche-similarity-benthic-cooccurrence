@@ -13,6 +13,18 @@
 library(here)
 library(terra)
 
+# ============================================================
+# R AND PACKAGE VERSIONS
+# ============================================================
+# Versions from the current runtime, not the historical analysis environment.
+
+cat("R version:", R.version.string, "\n") # R version: 4.5.1 (2025-06-13 ucrt)
+
+cat("Versions of the libraries used:\n")
+cat("here:", as.character(packageVersion("here")), "\n") # here: 1.0.2
+cat("terra:", as.character(packageVersion("terra")), "\n") # terra: 1.8.54
+cat("raster:", as.character(packageVersion("raster")), "\n") # raster: 3.6.32
+
 # 1. Paths ---------------------------------------------------------------
 bio_file <- here("data", "interim", "bio_oracle",
                  "raster_stack_biooracle_2000_2020.tif")

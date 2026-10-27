@@ -12,6 +12,20 @@ library(dplyr)
 library(tidyr)
 library(vegan)
 
+# ============================================================
+# R AND PACKAGE VERSIONS
+# ============================================================
+# Versions from the current runtime, not the historical analysis environment.
+
+cat("R version:", R.version.string, "\n") # R version: 4.5.1 (2025-06-13 ucrt)
+
+cat("Versions of the libraries used:\n")
+cat("here:", as.character(packageVersion("here")), "\n") # here: 1.0.2
+cat("sf:", as.character(packageVersion("sf")), "\n") # sf: 1.0.21
+cat("dplyr:", as.character(packageVersion("dplyr")), "\n") # dplyr: 1.1.4
+cat("tidyr:", as.character(packageVersion("tidyr")), "\n") # tidyr: 1.3.1
+cat("vegan:", as.character(packageVersion("vegan")), "\n") # vegan: 2.7.2
+
 # 1. Paths -----------------------------------------------------------------
 input_file <- here("data", "processed", "grids", "species_grid_assignments.gpkg")
 output_dir <- here("results", "global_analyses", "cooccurrence")

@@ -16,6 +16,19 @@ library(here)
 library(sf)
 library(dplyr)
 
+# ============================================================
+# R AND PACKAGE VERSIONS
+# ============================================================
+# Versions from the current runtime, not the historical analysis environment.
+
+cat("R version:", R.version.string, "\n") # R version: R version 4.5.1 (2025-06-13 ucrt) 
+
+cat("Versions of the libraries used:\n")
+cat("here:", as.character(packageVersion("here")), "\n") # here: 1.0.2
+cat("sf:", as.character(packageVersion("sf")), "\n") # sf: 1.0.21
+cat("dplyr:", as.character(packageVersion("dplyr")), "\n") # dplyr: 1.1.4
+cat("magrittr:", as.character(packageVersion("magrittr")), "\n") # magrittr: 2.0.3
+
 # 1. Project paths ---------------------------------------------------------
 grid_file <- here("data", "interim", "grids", "grid_ocean_0.1deg.gpkg")
 meow_file <- here("data", "raw", "meow", "meow_ecos.shp")

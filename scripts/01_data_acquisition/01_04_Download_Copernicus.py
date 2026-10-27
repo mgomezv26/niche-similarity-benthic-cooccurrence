@@ -15,6 +15,23 @@ import pandas as pd # Version 2.2.3
 import matplotlib.pyplot as plt # Version 3.10.0
 import numpy as np # Version 2.2.1
 
+# ============================================================
+# PYTHON AND PACKAGE VERSIONS
+# ============================================================
+# Versions from the current runtime, not the historical analysis environment.
+
+import sys
+from importlib.metadata import PackageNotFoundError, version
+
+print(f"Python version: {sys.version}")
+print("Package versions:")
+for _version_package in ['copernicusmarine', 'xarray', 'pandas', 'matplotlib', 'numpy']:
+    try:
+        print(f"{_version_package}: {version(_version_package)}")
+    except PackageNotFoundError:
+        print(f"{_version_package}: version not available")
+del _version_package
+
 
 ###===================================================================================================================================###
 ### CHLOROPHYLL - PHYTOPLANKTON CORRELATION

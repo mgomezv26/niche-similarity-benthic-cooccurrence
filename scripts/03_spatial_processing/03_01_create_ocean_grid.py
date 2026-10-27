@@ -14,6 +14,23 @@ from shapely.geometry import box
 from shapely.validation import make_valid
 from tqdm import tqdm
 
+# ============================================================
+# PYTHON AND PACKAGE VERSIONS
+# ============================================================
+# Versions from the current runtime, not the historical analysis environment.
+
+import sys
+from importlib.metadata import PackageNotFoundError, version
+
+print(f"Python version: {sys.version}")
+print("Package versions:")
+for _version_package in ['geopandas', 'numpy', 'rasterio', 'shapely', 'tqdm']:
+    try:
+        print(f"{_version_package}: {version(_version_package)}")
+    except PackageNotFoundError:
+        print(f"{_version_package}: version not available")
+del _version_package
+
 
 # 1. Project paths ----------------------------------------------------------
 def find_project_root(script_path: Path) -> Path:

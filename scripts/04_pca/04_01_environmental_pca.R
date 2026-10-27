@@ -19,6 +19,18 @@ library(here)
 library(sf)
 library(ggplot2)
 
+# ============================================================
+# R AND PACKAGE VERSIONS
+# ============================================================
+# Versions from the current runtime, not the historical analysis environment.
+
+cat("R version:", R.version.string, "\n") # R version: R version 4.5.1 (2025-06-13 ucrt) 
+
+cat("Versions of the libraries used:\n")
+cat("here:", as.character(packageVersion("here")), "\n") # here: 1.0.2
+cat("sf:", as.character(packageVersion("sf")), "\n") # sf: 1.0.21
+cat("ggplot2:", as.character(packageVersion("ggplot2")), "\n") # ggplot2: 4.0.0
+
 # 1. Files ------------------------------------------------------------------
 input_file <- here("data", "processed", "grids", "grid_meow_env_clean_0.1deg.gpkg")
 output_file <- here("data", "processed", "grids", "grid_meow_env_pca6_0.1deg.gpkg")

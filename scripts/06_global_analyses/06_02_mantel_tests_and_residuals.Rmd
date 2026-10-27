@@ -35,6 +35,28 @@ library(paletteer)
 library(knitr)
 library(kableExtra)
 library(patchwork)
+
+# ============================================================
+# R AND PACKAGE VERSIONS
+# ============================================================
+# Versions from the current runtime, not the historical analysis environment.
+
+cat("R version:", R.version.string, "\n")
+
+cat("Versions of the libraries used:\n")
+cat("tidyverse:", as.character(packageVersion("tidyverse")), "\n")
+cat("sf:", as.character(packageVersion("sf")), "\n")
+cat("vegan:", as.character(packageVersion("vegan")), "\n")
+cat("hypervolume:", as.character(packageVersion("hypervolume")), "\n")
+cat("daee:", as.character(packageVersion("daee")), "\n")
+cat("paletteer:", as.character(packageVersion("paletteer")), "\n")
+cat("knitr:", as.character(packageVersion("knitr")), "\n")
+cat("kableExtra:", as.character(packageVersion("kableExtra")), "\n")
+cat("patchwork:", as.character(packageVersion("patchwork")), "\n")
+cat("here:", as.character(packageVersion("here")), "\n")
+cat("ggplot2:", as.character(packageVersion("ggplot2")), "\n")
+cat("dplyr:", as.character(packageVersion("dplyr")), "\n")
+cat("magrittr:", as.character(packageVersion("magrittr")), "\n")
 ```
 
 # PROJECT PATHS AND OUTPUT DIRECTORIES

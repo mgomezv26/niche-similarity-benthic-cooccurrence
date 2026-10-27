@@ -21,9 +21,31 @@ library(broom)
 library(MuMIn)
 library(tidyr)
 
+# ============================================================
+# R AND PACKAGE VERSIONS
+# ============================================================
+# Versions from the current runtime, not the historical analysis environment.
+
+cat("R version:", R.version.string, "\n") # R version: 4.5.1 (2025-06-13 ucrt)
+
+cat("Versions of the libraries used:\n")
+cat("here:", as.character(packageVersion("here")), "\n") # here: 1.0.2
+cat("dplyr:", as.character(packageVersion("dplyr")), "\n") # dplyr: 1.1.4
+cat("readr:", as.character(packageVersion("readr")), "\n") # readr: 2.1.5
+cat("terra:", as.character(packageVersion("terra")), "\n") # terra: 1.8.54
+cat("tibble:", as.character(packageVersion("tibble")), "\n") # tibble: 3.3.0
+cat("corrplot:", as.character(packageVersion("corrplot")), "\n") # corrplot: 0.95
+cat("car:", as.character(packageVersion("car")), "\n") # car: 3.1.3
+cat("ggplot2:", as.character(packageVersion("ggplot2")), "\n") # ggplot2: 4.0.0
+cat("broom:", as.character(packageVersion("broom")), "\n") # broom: 1.0.10
+cat("MuMIn:", as.character(packageVersion("MuMIn")), "\n") # MuMIn: 1.48.11
+cat("tidyr:", as.character(packageVersion("tidyr")), "\n") # tidyr: 1.3.1
+cat("magrittr:", as.character(packageVersion("magrittr")), "\n") # magrittr: 2.0.3
+
 # Paths relative to repository root (the .here marker).
 # The expected-cooccurrence table is an INPUT from another local workflow,
 # not produced by this script. Verify its generating script before execution.
+
 env_file <- here("data", "raw", "local_analyses", "norway", "environmental", "env_full-001.tif")
 prob_file <- here("data", "processed", "local_analyses", "norway",
                   "community_expected_cooccurrence_probability_all_filt.csv")

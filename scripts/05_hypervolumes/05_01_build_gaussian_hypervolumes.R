@@ -27,6 +27,20 @@ library(dplyr)
 library(sf)
 library(hypervolume)
 
+# ============================================================
+# R AND PACKAGE VERSIONS
+# ============================================================
+# Versions from the current runtime, not the historical analysis environment.
+
+cat("R version:", R.version.string, "\n") # R version: R version 4.5.1 (2025-06-13 ucrt) 
+
+cat("Versions of the libraries used:\n")
+cat("here:", as.character(packageVersion("here")), "\n") # here: 1.0.2
+cat("dplyr:", as.character(packageVersion("dplyr")), "\n") # dplyr: 1.1.4
+cat("sf:", as.character(packageVersion("sf")), "\n") # sf: 1.0.21
+cat("hypervolume:", as.character(packageVersion("hypervolume")), "\n") # hypervolume: 3.1.6
+cat("magrittr:", as.character(packageVersion("magrittr")), "\n") # magrittr: 2.0.3
+
 # 1. Input and output paths -------------------------------------------------
 pca_grid_file <- here("data", "processed", "grids", "grid_meow_env_pca6_0.1deg.gpkg")
 species_grid_file <- here("data", "processed", "grids", "species_grid_assignments.gpkg")

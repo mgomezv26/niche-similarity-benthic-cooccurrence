@@ -7,6 +7,24 @@ library(readxl)
 library(ggplot2)
 
 # ============================================================
+# R AND PACKAGE VERSIONS
+# ============================================================
+# Versions from the current runtime, not the historical analysis environment.
+
+cat("R version:", R.version.string, "\n") # R version: 4.5.1 (2025-06-13 ucrt)
+
+cat("Versions of the libraries used:\n")
+cat("tidyverse:", as.character(packageVersion("tidyverse")), "\n") # tidyverse: 2.0.0
+cat("dplyr:", as.character(packageVersion("dplyr")), "\n") # dplyr: 1.1.4
+cat("vegan:", as.character(packageVersion("vegan")), "\n") # vegan: 2.7.2
+cat("janitor:", as.character(packageVersion("janitor")), "\n") # janitor: 2.2.1
+cat("readxl:", as.character(packageVersion("readxl")), "\n") # readxl: 1.4.5
+cat("ggplot2:", as.character(packageVersion("ggplot2")), "\n") # ggplot2: 4.0.0
+cat("readr:", as.character(packageVersion("readr")), "\n") # readr: 2.1.5
+cat("tibble:", as.character(packageVersion("tibble")), "\n") # tibble: 3.3.0
+cat("tidyr:", as.character(packageVersion("tidyr")), "\n") # tidyr: 1.3.1
+cat("magrittr:", as.character(packageVersion("magrittr")), "\n") # magrittr: 2.0.3
+# ============================================================
 # 1. DEFINE PATHS
 # ============================================================
 

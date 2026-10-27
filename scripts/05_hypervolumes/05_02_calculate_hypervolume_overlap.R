@@ -22,6 +22,17 @@
 library(here)
 library(hypervolume)
 
+# ============================================================
+# R AND PACKAGE VERSIONS
+# ============================================================
+# Versions from the current runtime, not the historical analysis environment.
+
+cat("R version:", R.version.string, "\n") # R version: R version 4.5.1 (2025-06-13 ucrt) 
+
+cat("Versions of the libraries used:\n")
+cat("here:", as.character(packageVersion("here")), "\n") # here: 1.0.2
+cat("hypervolume:", as.character(packageVersion("hypervolume")), "\n") # hypervolume: 3.1.6
+
 # 1. Paths ------------------------------------------------------------------
 input_file <- here("results", "hypervolumes", "gaussian",
                    "hv_list_all_species.RData")

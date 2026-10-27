@@ -8,8 +8,28 @@ library(maps)
 library(viridis)
 library(CoordinateCleaner)
 library(sf)
+library(here) 
 
-library(here)
+# ============================================================
+# R AND PACKAGE VERSIONS
+# ============================================================
+# Versions from the current runtime, not the historical analysis environment.
+
+cat("R version:", R.version.string, "\n")
+# R version: R version 4.5.1 (2025-06-13 ucrt) 
+
+cat("Versions of the libraries used:\n")
+cat("rgbif:", as.character(packageVersion("rgbif")), "\n") # rgbif: 3.8.5
+cat("dplyr:", as.character(packageVersion("dplyr")), "\n") # dplyr: 1.1.4
+cat("readxl:", as.character(packageVersion("readxl")), "\n") # readxl: 1.4.5
+cat("ggplot2:", as.character(packageVersion("ggplot2")), "\n") # ggplot2: 4.0.0
+cat("maps:", as.character(packageVersion("maps")), "\n") # maps: 3.4.3
+cat("viridis:", as.character(packageVersion("viridis")), "\n") # viridis: 0.6.5
+cat("CoordinateCleaner:", as.character(packageVersion("CoordinateCleaner")), "\n") # CoordinateCleaner: 3.0.1
+cat("sf:", as.character(packageVersion("sf")), "\n") # sf: 1.0.21
+cat("here:", as.character(packageVersion("here")), "\n") # here: 1.0.2
+cat("lubridate:", as.character(packageVersion("lubridate")), "\n") # lubridate: 1.9.4
+cat("magrittr:", as.character(packageVersion("magrittr")), "\n") # magrittr: 2.0.3
 
 # Read GBIF data
 list_species <- read_excel(
