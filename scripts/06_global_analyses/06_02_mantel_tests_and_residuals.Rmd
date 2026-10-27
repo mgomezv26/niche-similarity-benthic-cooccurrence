@@ -415,7 +415,7 @@ write.csv(mantel_df,
 
 ```{r}
 plot1 <- ggplot(mantel_df, aes(x = schoener_d, y = cooc)) +
-  geom_point(alpha = 0.5, size = 1, shape = 16, color = "#80cdc1") + # puntos azules con transparencia
+  geom_point(alpha = 0.5, size = 1, shape = 16, color = "#80cdc1") + # blue points with transparency
   geom_smooth(method = "lm", se = FALSE, color = "#018571", linewidth = 1) +
   labs(title = "Niche overlap (Schoener’s D)",
      x = "Niche distance (1 - Schoener D overlap)",
@@ -436,7 +436,7 @@ ggsave(paste0(save_path_figs, "/plot1_nichesimilarity_DSchoener_co_mentel.png"),
 
 ```{r}
 plot2 <- ggplot(mantel_df, aes(x = niche_jaccard, y = cooc)) +
-  geom_point(alpha = 0.5, size = 1, shape = 16, color = "#a6cee3") + # puntos azules con transparencia
+  geom_point(alpha = 0.5, size = 1, shape = 16, color = "#a6cee3") + # blue points with transparency
   geom_smooth(method = "lm", se = FALSE, color = "#1f78b4", linewidth = 1) +
   labs(title = "Niche overlap (Hypervolume Jaccard)",
      x = "Niche distance (1 - Jaccard overlap)",
@@ -457,7 +457,7 @@ ggsave(paste0(save_path_figs, "/plot2_nichesimilarity_Jaccard_co_mentel.png"),
 
 ```{r}
 plot3 <- ggplot(mantel_df, aes(x = niche_centroid, y = cooc)) +
-  geom_point(alpha = 0.5, size = 1, shape = 16, color = "#ba8bc9ff") + # puntos azules con transparencia
+  geom_point(alpha = 0.5, size = 1, shape = 16, color = "#ba8bc9ff") + # blue points with transparency
   geom_smooth(method = "lm", se = FALSE, color = "#540046", linewidth = 1) +
   labs(x = "Niche proximity (centroid distance)",
        y = "Co-occurrence distance (Jaccard dissimilarity)",
@@ -480,7 +480,7 @@ ggsave(paste0(save_path_figs, "/plot3_nicheproximity_co_mentel.png"),
 layout <- c(
   area(t = 1, l = 1, b = 1, r = 2),  # plot2
   area(t = 1, l = 3, b = 1, r = 4),  # plot1
-  area(t = 2, l = 2, b = 2, r = 3)   # plot3 centrado
+  area(t = 2, l = 2, b = 2, r = 3)   # plot3 centered
 )
 
 combined_plot <- wrap_plots(
@@ -504,7 +504,7 @@ Positive residuals therefore indicate **less** co-occurrence than expected,
 whereas negative residuals indicate **more** co-occurrence than expected.
 
 ```{r}
-# Residuos de los Mantel tests
+# Residuals from the Mantel tests
 resid_schoener <- mantel.residuals(cooc_mat, schoener_dist)
 resid_jaccard  <- mantel.residuals(cooc_mat, niche_jd)
 resid_centroid <- mantel.residuals(cooc_mat, niche_cent)

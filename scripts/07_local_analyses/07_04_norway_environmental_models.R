@@ -95,7 +95,7 @@ coords_5m <- sample_5m %>%
   ) %>%
   select(SampID, X, Y)
 
-# extraer datos del raster
+# extract data from the raster
 env_5m <- terra::extract(
   env_sel,
   as.matrix(coords_5m[, c("X", "Y")])
@@ -107,7 +107,7 @@ env_5m <- bind_cols(
 )
 head(env_5m)
 
-# Unir variables oceanograficas + la probabilidad media
+# Join oceanographic variables + mean probability
 mean_prob_5m_env <- mean_prob_5m %>%
   left_join(env_5m, by = "SampID")
 
@@ -116,7 +116,7 @@ nrow(mean_prob_5m_env)
 
 colSums(is.na(mean_prob_5m_env))
 
-# ver valores nulos, si estan en las mismas columnas
+# inspect null values to see whether they are in the same columns
 mean_prob_5m_env %>%
   summarise(across(
     c(bathy200_sed, mud, sand, gravel, rock,
@@ -188,7 +188,7 @@ coords_40m <- sample_40m %>%
   ) %>%
   select(SampID, X, Y)
 
-# extraer datos del raster
+# extract data from the raster
 env_40m <- terra::extract(
   env_sel,
   as.matrix(coords_40m[, c("X", "Y")])
@@ -200,7 +200,7 @@ env_40m <- bind_cols(
 )
 head(env_40m)
 
-# Unir variables oceanograficas + la probabilidad media
+# Join oceanographic variables + mean probability
 mean_prob_40m_env <- mean_prob_40m %>%
   left_join(env_40m, by = "SampID")
 
@@ -209,7 +209,7 @@ nrow(mean_prob_40m_env)
 
 colSums(is.na(mean_prob_40m_env))
 
-# ver valores nulos, si estan en las mismas columnas
+# inspect null values to see whether they are in the same columns
 mean_prob_40m_env %>%
   summarise(across(
     c(bathy200_sed, mud, sand, gravel, rock,
@@ -282,7 +282,7 @@ coords_400m <- sample_400m %>%
   ) %>%
   select(SampID, X, Y)
 
-# extraer datos del raster
+# extract data from the raster
 env_400m <- terra::extract(
   env_sel,
   as.matrix(coords_400m[, c("X", "Y")])
@@ -294,7 +294,7 @@ env_400m <- bind_cols(
 )
 head(env_400m)
 
-# Unir variables oceanograficas + la probabilidad media
+# Join oceanographic variables + mean probability
 mean_prob_400m_env <- mean_prob_400m %>%
   left_join(env_400m, by = "SampID")
 
@@ -303,7 +303,7 @@ nrow(mean_prob_400m_env)
 
 colSums(is.na(mean_prob_400m_env))
 
-# ver valores nulos, si estan en las mismas columnas
+# inspect null values to see whether they are in the same columns
 mean_prob_400m_env %>%
   summarise(across(
     c(bathy200_sed, mud, sand, gravel, rock,
@@ -375,7 +375,7 @@ kruskal.test(
 )
 
 # ============================================================
-# 6. MATRIZ CORRELACION ENTRE VARIABLES
+# 6. CORRELATION MATRIX BETWEEN VARIABLES
 # ============================================================
 
 env_vars_all <- mean_prob_all %>%
@@ -460,7 +460,7 @@ sort(vif_values, decreasing = TRUE)
 
 
 # ============================================================
-# 7. MODELOS CON VARIABLES ESTANDARIZADAS
+# 7. MODELS WITH STANDARDIZED VARIABLES
 # ============================================================
 
 mean_prob_all_mod <- mean_prob_all %>%
@@ -493,7 +493,7 @@ vars_model <- c(
 )
 
 
-# Estandarizar predictores
+# Standardize predictors
 mean_prob_all_std <- mean_prob_all_mod %>%
   mutate(
     across(
@@ -515,7 +515,7 @@ formula_local_std <- mean_expected_prob ~
   Slope +
   Seafloor_roughness
 
-# Modelo conjunto para comprobar VIF
+# Combined model to check VIF
 lm_all_std <- lm(
   formula_local_std,
   data = mean_prob_all_std
@@ -523,7 +523,7 @@ lm_all_std <- lm(
 
 car::vif(lm_all_std)
 
-# Modelos por escala
+# Models by scale
 lm_5m_std <- lm(formula_local_std,
                 data = filter(mean_prob_all_std, scale == "5m"))
 
@@ -540,7 +540,7 @@ summary(lm_400m_std)
 
 
 # ============================================================
-# 8. Tabla resumen de modelos
+# 8. Model summary table
 # ============================================================
 
 model_summary <- data.frame(
@@ -570,10 +570,10 @@ write.csv(model_summary,
 
 
 # ============================================================
-# 9. Figura principal tipo Ecography: coeficientes estandarizados
+# 9. Main Ecography-style figure: standardized coefficients
 # ============================================================
 # ============================================================
-# Extraer coeficientes de los 3 modelos
+# Extract coefficients from the 3 models
 # ============================================================
 
 coef_df <- bind_rows(
@@ -589,7 +589,7 @@ coef_df <- bind_rows(
   filter(term != "(Intercept)")
 
 # ============================================================
-# Renombrar variables
+# Rename variables
 # ============================================================
 
 coef_df$term <- factor(
@@ -628,7 +628,7 @@ coef_df$scale <- factor(
 )
 
 # ============================================================
-# Colores del artículo
+# Colors for the article
 # ============================================================
 
 colors <- c(
@@ -638,7 +638,7 @@ colors <- c(
 )
 
 # ============================================================
-# Figura tipo Ecography
+# Ecography-style figure
 # ============================================================
 
 coef_plot <- ggplot(

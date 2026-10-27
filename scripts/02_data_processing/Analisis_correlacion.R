@@ -104,7 +104,7 @@ Correlation.average <- hclust(Correlation.dist, method = "average") # Perform hi
 
 # Save the graphic as a JPEG file
 jpeg(paste0(save_path, "/Correlation_env.jpg", width = 2800, height = 1000))
-plot(Correlation.average)  # Gráfico de dendrograma
+plot(Correlation.average)  # Dendrogram plot
 dev.off()
 
 
@@ -121,7 +121,7 @@ ggplot(Correlation_melted, aes(x = Var1, y = Var2, fill = Correlation)) +
         axis.text.y = element_text(angle = 45, hjust = 1)) +
   labs(title = "Heat Map of Correlations between Environmental Variables")
 
-# Guardar el mapa de calor como archivo PNG
+# Save the heat map as a PNG file
 ggsave(paste0(save_path, "/Heatmap_Correlation_env.png", width = 10, height = 8, dpi = 300))
 
 ggsave(paste0(save_path, "/Heatmap_Correlation_env.png"), 
@@ -149,14 +149,14 @@ Correlation.average <- hclust(Correlation.dist, method = "average") # Perform hi
 
 # Save the graphic as a JPEG file
 jpeg(paste0(save_path, "/Correlation_env_mean.jpg", width = 2800, height = 1000))
-plot(Correlation.average)  # Gráfico de dendrograma
+plot(Correlation.average)  # Dendrogram plot
 dev.off()
 
 
 Correlation_melted <- melt(Correlation)
 colnames(Correlation_melted) <- c("Var1", "Var2", "Correlation")
 
-# Crear el mapa de calor con ggplot2
+# Create the heat map with ggplot2
 ggplot(Correlation_melted, aes(x = Var1, y = Var2, fill = Correlation)) +
   geom_tile() +  
   scale_fill_gradient2(low = "blue", high = "red", mid = "white", midpoint = 0, 

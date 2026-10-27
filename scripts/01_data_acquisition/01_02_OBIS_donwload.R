@@ -103,7 +103,7 @@ nrow(data_obis) # 1122730
 name_changes <- read_excel("list_of_species_V0.xlsx", sheet = "OBIS_STANDARD")
 head(name_changes)
 name_map <- setNames(name_changes$standard_name, name_changes$original_name)
-# Reemplazar nombres en la columna `scientificName`
+# Replace names in the `scientificName` column
 data_obis <- data_obis %>%
   mutate(scientificName = recode(scientificName, !!!name_map))
 
@@ -350,7 +350,7 @@ data <- read.csv('01_DATA/02_OBIS/data_sea_base_map.csv')
 
 nrow(data) # 278261
 
-str(data$year)  # Ver el tipo de dato
+str(data$year)  # Inspect the data type
 
 # sum(is.na(data$year)) # there are 29286 NA in year
 # max(data$year, na.rm = TRUE) # 2024
@@ -365,7 +365,7 @@ library(lubridate)
 # Convert ‘eventDate’ to Date format
 data$eventDate <- as.Date(data$eventDate, format="%Y-%m-%d")
 
-# Condición para actualizar 'year' solo si es NA
+# Condition to update 'year' only if it is NA
 #data$year <- ifelse(is.na(data$year), year(data$eventDate), data$year)
 
 # Priority: 1) date_year, 2) eventDate
@@ -385,7 +385,7 @@ data <- data %>% filter(year >= 1950)
 
 data$date <- as.Date(paste(data$day, data$month, data$year, sep = "/"), format = "%d/%m/%Y")
 
-# 4. Guardar datos procesados
+# 4. Save processed data
 write.csv(
   occurrences_clean,
   here("data", "interim",

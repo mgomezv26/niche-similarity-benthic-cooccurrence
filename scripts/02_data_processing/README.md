@@ -1,99 +1,101 @@
-# 03 — Procesamiento espacial
+# 03 — Spatial processing
 
-Esta carpeta contiene los scripts responsables de construir la cuadrícula oceánica global de 0,1°, asignar las regiones biogeográficas MEOW, extraer las variables ambientales y asociar los registros de ocurrencia de las especies bentónicas a las celdas espaciales.
+**Language: [English](README.md) | [Español](README.es.md)**
 
-El objetivo es generar una estructura espacial común para los análisis posteriores de nicho ambiental, PCA, hipervolúmenes y coocurrencia.
+This folder contains the scripts responsible for constructing the global 0.1° ocean grid, assigning MEOW biogeographic regions, extracting environmental variables, and associating benthic species occurrence records with spatial cells.
+
+The objective is to generate a common spatial structure for subsequent analyses of environmental niches, PCA, hypervolumes, and co-occurrence.
 
 ## 1. Scripts
 
-| Script | Función | Salida principal |
+| Script | Function | Main output |
 | --- | --- | --- |
-| `03_01_create_ocean_grid.py` | Genera la cuadrícula global de 0,1° y elimina las celdas que intersectan tierra. | `grid_ocean_0.1deg.gpkg` |
-| `03_02_assign_meow_realms.R` | Asigna las regiones biogeográficas MEOW a las celdas oceánicas. | `grid_meow_0.1deg.gpkg` |
-| `03_03_extract_environmental.R` | Extrae las variables ambientales a las celdas del grid y elimina las celdas sin información ambiental requerida. | `grid_meow_env_clean_0.1deg.gpkg` |
-| `03_04_assign_species_to_grid.R` | Asigna los registros de ocurrencia de las especies a las celdas espaciales. | `species_grid_assignments.gpkg` |
+| `03_01_create_ocean_grid.py` | Generates the global 0.1° grid and removes cells that intersect land. | `grid_ocean_0.1deg.gpkg` |
+| `03_02_assign_meow_realms.R` | Assigns MEOW biogeographic regions to ocean cells. | `grid_meow_0.1deg.gpkg` |
+| `03_03_extract_environmental.R` | Extracts environmental variables for grid cells and removes cells lacking required environmental information. | `grid_meow_env_clean_0.1deg.gpkg` |
+| `03_04_assign_species_to_grid.R` | Assigns species occurrence records to spatial cells. | `species_grid_assignments.gpkg` |
 
-Los scripts `03_02`, `03_03` y `03_04` proceden de la reorganización del antiguo archivo `Assign_MEOW_realms_to_grid.R`, que combinaba distintas operaciones espaciales y ambientales.
+The scripts `03_02`, `03_03`, and `03_04` originate from the reorganization of the former `Assign_MEOW_realms_to_grid.R` file, which combined several spatial and environmental operations.
 
-## 2. Datos de entrada
+## 2. Input data
 
-### Cuadrícula oceánica
+### Ocean grid
 
-El script `03_01_create_ocean_grid.py` utiliza:
+The script `03_01_create_ocean_grid.py` uses:
 
-- `data/interim/environmental/r_stack_standardized.tif`: ráster de referencia para definir la extensión espacial.
-- `data/raw/geography/basemap2.shp`: cartografía terrestre utilizada para excluir las celdas que intersectan tierra.
+- `data/interim/environmental/r_stack_standardized.tif`: reference raster for defining the spatial extent.
+- `data/raw/geography/basemap2.shp`: land map used to exclude cells that intersect land.
 
-La cuadrícula se genera con una resolución espacial de **0,1° × 0,1°**.
+The grid is generated at a spatial resolution of **0.1° × 0.1°**.
 
-### Regiones biogeográficas MEOW
+### MEOW biogeographic regions
 
-El script `03_02_assign_meow_realms.R` utiliza:
+The script `03_02_assign_meow_realms.R` uses:
 
 - `data/interim/grids/grid_ocean_0.1deg.gpkg`
 - `data/raw/meow/meow_ecos.shp`
 
-Se incorporan los atributos `REALM` y `RLM_CODE` mediante una unión espacial por intersección.
+The `REALM` and `RLM_CODE` attributes are incorporated through a spatial join by intersection.
 
-### Variables ambientales
+### Environmental variables
 
-El script `03_03_extract_environmental.R` utiliza:
+The script `03_03_extract_environmental.R` uses:
 
 - `data/interim/grids/grid_meow_0.1deg.gpkg`
 - `data/processed/environmental/raster_standardized_vars_correct_new_vars.tif`
 - `data/processed/environmental/layer_names_raster_standardized_vars_correct_new_vars.rds`
 
-Los valores ambientales se extraen a partir de los rásteres armonizados y estandarizados durante la etapa anterior.
+Environmental values are extracted from the rasters harmonized and standardized during the previous stage.
 
-### Registros de especies
+### Species records
 
-El script `03_04_assign_species_to_grid.R` utiliza los registros de ocurrencia procesados y la cuadrícula ambiental definitiva.
+The script `03_04_assign_species_to_grid.R` uses the processed occurrence records and the final environmental grid.
 
-El archivo de referencia para las ocurrencias procesadas es:
+The reference file for processed occurrences is:
 
 `data/interim/occurrences/species_data.csv`
 
-## 3. Metodología
+## 3. Methodology
 
-### 3.1. Creación del grid oceánico
+### 3.1. Ocean grid creation
 
 **Script:** `03_01_create_ocean_grid.py`
 
-1. Obtiene la extensión espacial del ráster ambiental de referencia.
-2. Construye una cuadrícula regular global de 0,1°.
-3. Asigna un identificador único `cell_id` a cada celda.
-4. Identifica las celdas que intersectan la cartografía terrestre.
-5. Excluye esas celdas para conservar únicamente las celdas oceánicas.
+1. Obtains the spatial extent of the reference environmental raster.
+2. Constructs a regular global 0.1° grid.
+3. Assigns a unique `cell_id` identifier to each cell.
+4. Identifies cells that intersect the land map.
+5. Excludes those cells to retain only ocean cells.
 
-Se generan dos archivos:
+Two files are generated:
 
-- `grid_global_0.1deg.gpkg`: cuadrícula completa.
-- `grid_ocean_0.1deg.gpkg`: cuadrícula después de excluir las celdas que intersectan tierra.
+- `grid_global_0.1deg.gpkg`: complete grid.
+- `grid_ocean_0.1deg.gpkg`: grid after excluding cells that intersect land.
 
-**Importante:** la exclusión se realiza por intersección con tierra. Las celdas costeras no se recortan para conservar únicamente su superficie marina.
+**Important:** exclusion is based on intersection with land. Coastal cells are not clipped to retain only their marine area.
 
-### 3.2. Asignación de regiones MEOW
+### 3.2. Assignment of MEOW regions
 
 **Script:** `03_02_assign_meow_realms.R`
 
-1. Carga la cuadrícula oceánica y los polígonos MEOW.
-2. Comprueba y armoniza los sistemas de referencia espacial.
-3. Realiza una unión espacial por intersección.
-4. Incorpora los atributos `REALM` y `RLM_CODE`.
-5. Conserva únicamente las celdas con una región asignada.
-6. Mantiene una única fila por `cell_id`.
+1. Loads the ocean grid and MEOW polygons.
+2. Checks and harmonizes spatial reference systems.
+3. Performs a spatial join by intersection.
+4. Incorporates the `REALM` and `RLM_CODE` attributes.
+5. Retains only cells with an assigned region.
+6. Keeps a single row per `cell_id`.
 
-Cuando una celda intersecta varias regiones, el procedimiento conserva la primera correspondencia obtenida por la unión espacial.
+When a cell intersects several regions, the procedure retains the first match obtained from the spatial join.
 
-La operación asigna atributos biogeográficos; no recorta las geometrías del grid según los límites MEOW.
+The operation assigns biogeographic attributes; it does not clip grid geometries to MEOW boundaries.
 
-### 3.3. Extracción de variables ambientales
+### 3.3. Extraction of environmental variables
 
 **Script:** `03_03_extract_environmental.R`
 
-Las variables ambientales continuas se extraen utilizando su **valor medio dentro de cada celda de 0,1°**.
+Continuous environmental variables are extracted using their **mean value within each 0.1° cell**.
 
-Variables continuas:
+Continuous variables:
 
 - `bathymetry`
 - `o2`
@@ -105,93 +107,93 @@ Variables continuas:
 - `thetao`
 - `chl`
 
-Las variables categóricas relacionadas con el sedimento se resumen mediante su **clase modal**:
+Categorical sediment-related variables are summarized using their **modal class**:
 
 - `sediment_size`
 - `z_origin`
 
-El procesamiento conserva los campos derivados `r_sediment_size` y `r_sediment_origin`.
+Processing retains the derived fields `r_sediment_size` and `r_sediment_origin`.
 
-Posteriormente, se eliminan las celdas sin valores válidos en las variables ambientales requeridas, siguiendo los filtros del procedimiento original.
+Cells without valid values for the required environmental variables are subsequently removed, following the filters in the original procedure.
 
-El resultado es la cuadrícula ambiental definitiva utilizada para la PCA.
+The result is the final environmental grid used for PCA.
 
-### 3.4. Asignación de ocurrencias de especies
+### 3.4. Assignment of species occurrences
 
 **Script:** `03_04_assign_species_to_grid.R`
 
-1. Carga los registros de ocurrencia procesados.
-2. Utiliza las coordenadas geográficas de las especies para realizar la asignación espacial.
-3. Relaciona cada registro con las celdas del grid ambiental definitivo.
-4. Conserva los identificadores de celda y especie necesarios para construir posteriormente las matrices de presencia/ausencia.
-5. Genera el archivo espacial de asignaciones.
+1. Loads the processed occurrence records.
+2. Uses species geographic coordinates for spatial assignment.
+3. Associates each record with cells in the final environmental grid.
+4. Retains the cell and species identifiers required to construct presence/absence matrices subsequently.
+5. Generates the spatial assignment file.
 
-Esta etapa sustituye la unión espacial que se realizaba anteriormente mediante QGIS.
+This stage replaces the spatial join previously performed using QGIS.
 
-La equivalencia exacta con la operación histórica de QGIS está pendiente de validación.
+Exact equivalence with the historical QGIS operation remains pending validation.
 
-## 4. Archivos de salida
+## 4. Output files
 
-### Resultados intermedios
+### Intermediate results
 
 `data/interim/grids/`
 
-| Archivo | Contenido |
+| File | Content |
 | --- | --- |
-| `grid_global_0.1deg.gpkg` | Cuadrícula global completa |
-| `grid_ocean_0.1deg.gpkg` | Celdas oceánicas después de excluir las intersecciones con tierra |
-| `grid_meow_0.1deg.gpkg` | Celdas oceánicas con atributos biogeográficos MEOW |
-| `grid_meow_env_0.1deg.gpkg` | Cuadrícula MEOW con los valores ambientales extraídos, antes del filtrado definitivo |
+| `grid_global_0.1deg.gpkg` | Complete global grid |
+| `grid_ocean_0.1deg.gpkg` | Ocean cells after excluding intersections with land |
+| `grid_meow_0.1deg.gpkg` | Ocean cells with MEOW biogeographic attributes |
+| `grid_meow_env_0.1deg.gpkg` | MEOW grid with extracted environmental values, before final filtering |
 
-### Resultados procesados
+### Processed results
 
 `data/processed/grids/`
 
-| Archivo | Contenido | Uso posterior |
+| File | Content | Subsequent use |
 | --- | --- | --- |
-| `grid_meow_env_clean_0.1deg.gpkg` | Grid MEOW con las variables ambientales definitivas | PCA ambiental |
-| `species_grid_assignments.gpkg` | Registros de especies asociados a las celdas del grid | Hipervolúmenes y coocurrencia |
+| `grid_meow_env_clean_0.1deg.gpkg` | MEOW grid with the final environmental variables | Environmental PCA |
+| `species_grid_assignments.gpkg` | Species records associated with grid cells | Hypervolumes and co-occurrence |
 
-Estos dos GeoPackages constituyen los productos principales de esta etapa.
+These two GeoPackages are the main products of this stage.
 
-## 5. Dependencias y orden de ejecución
+## 5. Dependencies and execution order
 
-Los scripts deben ejecutarse en el siguiente orden:
+The scripts must be run in the following order:
 
 1. `03_01_create_ocean_grid.py`
 2. `03_02_assign_meow_realms.R`
 3. `03_03_extract_environmental.R`
 4. `03_04_assign_species_to_grid.R`
 
-**Etapas anteriores:**
+**Previous stages:**
 
-- `01_data_acquisition/`: adquisición de registros y datos ambientales.
-- `02_data_processing/`: procesamiento de ocurrencias y preparación y armonización de variables ambientales.
+- `01_data_acquisition/`: acquisition of records and environmental data.
+- `02_data_processing/`: occurrence processing and preparation and harmonization of environmental variables.
 
-**Etapas posteriores:**
+**Subsequent stages:**
 
-- `04_pca/04_01_environmental_pca.R`: reducción de dimensionalidad ambiental.
-- `05_hypervolumes/05_01_build_gaussian_hypervolumes.R`: construcción de hipervolúmenes de nicho.
-- `06_global_analyses/06_01_calculate_global_cooccurrence.R`: cálculo de coocurrencia espacial entre especies.
+- `04_pca/04_01_environmental_pca.R`: environmental dimensionality reduction.
+- `05_hypervolumes/05_01_build_gaussian_hypervolumes.R`: construction of niche hypervolumes.
+- `06_global_analyses/06_01_calculate_global_cooccurrence.R`: calculation of spatial co-occurrence between species.
 
-## 6. Reproducibilidad y estado
+## 6. Reproducibility and status
 
-Los scripts han sido reorganizados para separar las operaciones espaciales y eliminar la dependencia de rutas absolutas.
+The scripts have been reorganized to separate spatial operations and remove the dependency on absolute paths.
 
-Los scripts R utilizan `here()` y el script Python utiliza rutas relativas al proyecto.
+The R scripts use `here()`, and the Python script uses project-relative paths.
 
-**Estado actual: scripts reorganizados, pendientes de ejecución integral y validación numérica frente a los productos históricos.**
+**Current status: reorganized scripts, pending end-to-end execution and numerical validation against the historical products.**
 
-Antes de considerar reproducidos los resultados originales, será necesario comprobar:
+Before the original results can be considered reproduced, the following must be checked:
 
-- El número de celdas generadas en la cuadrícula global y oceánica.
-- La exclusión de celdas que intersectan tierra.
-- La asignación de regiones MEOW, especialmente en celdas que intersectan varios polígonos.
-- La correspondencia de los valores ambientales extraídos.
-- Los filtros aplicados para obtener el grid ambiental definitivo.
-- La asignación de registros de especies a celdas, comparándola con la operación histórica realizada en QGIS.
-- La conservación de identificadores y nombres de especies entre las distintas etapas.
+- The number of cells generated in the global and ocean grids.
+- The exclusion of cells that intersect land.
+- The assignment of MEOW regions, particularly for cells intersecting multiple polygons.
+- The correspondence of extracted environmental values.
+- The filters applied to obtain the final environmental grid.
+- The assignment of species records to cells, compared with the historical operation performed in QGIS.
+- The preservation of identifiers and species names across stages.
 
-Durante el procesamiento histórico pudieron realizarse ajustes manuales en QGIS que todavía no están completamente documentados. Estos ajustes deben identificarse antes de certificar la reproducción exacta del resultado original.
+Manual adjustments may have been made in QGIS during the historical processing and are not yet fully documented. These adjustments must be identified before exact reproduction of the original result can be certified.
 
-Los GeoPackages y rásteres de gran tamaño se mantienen fuera del repositorio Git por el momento. La disponibilidad de los datos de entrada es necesaria para ejecutar y validar este flujo.
+Large GeoPackages and rasters are currently kept outside the Git repository. The input data must be available to run and validate this workflow.

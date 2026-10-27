@@ -93,7 +93,7 @@ jaccard_400m_mat <- read.csv(file.path(local_coocurrence, "jaccard_distance_400m
 ```
 
 ```{r}
-# funcion para ponerel nombre de las especies tambien como rownames
+# function to also use species names as rownames
 clean_names <- function(x) {
   x %>%
     as.character() %>%
@@ -172,13 +172,13 @@ for(local_name in names(local_mats)){
     local_mat <- local_mats[[local_name]]
     global_mat <- global_mats[[global_name]]
 
-    # especies comunes
+    # common species
     common_sp <- intersect(
       rownames(local_mat),
       rownames(global_mat)
     )
 
-    # filtrar
+    # filter
     local_filt <- local_mat[
       common_sp,
       common_sp
@@ -189,7 +189,7 @@ for(local_name in names(local_mats)){
       common_sp
     ]
 
-    # comprobar orden
+    # check order
     stopifnot(
       all(rownames(local_filt) == rownames(global_filt))
     )
@@ -202,7 +202,7 @@ for(local_name in names(local_mats)){
       permutations = 9999
     )
 
-    # guardar resultados
+    # save results
     mantel_results[[paste(local_name, global_name, sep = "_")]] <-
 
       data.frame(

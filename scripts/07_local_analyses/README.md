@@ -1,176 +1,178 @@
-# 07 — Análisis locales de coocurrencia y ambiente
+# 07 — Local co-occurrence and environmental analyses
 
-Esta carpeta contiene los scripts utilizados para analizar la relación entre la similitud de nicho ambiental de las especies bentónicas y sus patrones de coocurrencia a escala local.
+**Language: [English](README.md) | [Español](README.es.md)**
 
-Los análisis se realizan sobre comunidades de Noruega, considerando tres escalas espaciales: **5 m, 40 m y 400 m**.
+This folder contains the scripts used to analyze the relationship between environmental niche similarity in benthic species and their local-scale co-occurrence patterns.
 
-Esta etapa complementa los análisis globales realizados en `06_global_analyses/` y permite evaluar cómo varía la relación entre el nicho ambiental y la coocurrencia según la escala espacial.
+The analyses are performed on communities from Norway, considering three spatial scales: **5 m, 40 m, and 400 m**.
 
-También incluye un análisis específico de la relación entre las condiciones ambientales locales y la probabilidad esperada de coocurrencia de las comunidades.
+This stage complements the global analyses performed in `06_global_analyses/` and allows assessment of how the relationship between environmental niche and co-occurrence varies with spatial scale.
+
+It also includes a specific analysis of the relationship between local environmental conditions and the expected co-occurrence probability of communities.
 
 ## 1. Scripts
 
-| Script | Función | Salidas principales |
+| Script | Function | Main outputs |
 | --- | --- | --- |
-| `07_01_local_mantel_tests.Rmd` | Evalúa mediante tests de Mantel la relación entre las matrices globales de nicho y las matrices locales de coocurrencia. | Resultados de Mantel y figura comparativa |
-| `07_02_expected_vs_observed_cooccurrence.Rmd` | Compara la coocurrencia observada localmente con la esperada a partir de las métricas globales de nicho. | Residuos por pareja de especies y figuras |
-| `07_03_local_residual_analysis.R` | Resume las probabilidades esperadas de coocurrencia a nivel de comunidad para cada escala espacial. | Probabilidades por comunidad, resumen y figura |
-| `07_04_norway_environmental_models.R` | Analiza la relación entre las variables ambientales de Noruega y las probabilidades esperadas de coocurrencia. | Correlaciones, modelos lineales y figuras |
+| `07_01_local_mantel_tests.Rmd` | Uses Mantel tests to evaluate the relationship between global niche matrices and local co-occurrence matrices. | Mantel results and comparative figure |
+| `07_02_expected_vs_observed_cooccurrence.Rmd` | Compares locally observed co-occurrence with that expected from global niche metrics. | Residuals by species pair and figures |
+| `07_03_local_residual_analysis.R` | Summarizes expected co-occurrence probabilities at the community level for each spatial scale. | Community probabilities, summary, and figure |
+| `07_04_norway_environmental_models.R` | Analyzes the relationship between Norway's environmental variables and expected co-occurrence probabilities. | Correlations, linear models, and figures |
 
-Los scripts se han reorganizado a partir de los archivos originales:
+The scripts have been reorganized from the original files:
 
 - `02_Mantel_Test_Local_Scale.Rmd`
 - `03_expected_vs_observed_cooccurrence.Rmd`
 - `04_Analisis_residuos_locales.R`
 - `00_Env_data_norway.R`
 
-El orden de numeración actual refleja las dependencias entre los análisis.
+The current numbering reflects the dependencies among analyses.
 
-## 2. Datos de entrada
+## 2. Input data
 
-### 2.1. Matrices globales de nicho
+### 2.1. Global niche matrices
 
-Los scripts `07_01` y `07_02` utilizan matrices generadas durante los análisis globales:
+The scripts `07_01` and `07_02` use matrices generated during the global analyses:
 
 `results/global_analyses/mantel/matrices/`
 
-| Archivo | Contenido |
+| File | Content |
 | --- | --- |
-| `schoener_matrix.csv` | Matriz global de similitud de nicho basada en Schoener D |
-| `niche_jaccard_matrix.csv` | Matriz global de similitud de nicho basada en Jaccard |
-| `niche_distance_matrix.csv` | Matriz global de distancias entre centroides de nicho |
+| `schoener_matrix.csv` | Global niche-similarity matrix based on Schoener's D |
+| `niche_jaccard_matrix.csv` | Global niche-similarity matrix based on Jaccard |
+| `niche_distance_matrix.csv` | Global matrix of distances between niche centroids |
 
-La tercera matriz es utilizada por `07_01`, pero no por `07_02`.
+The third matrix is used by `07_01` but not by `07_02`.
 
-### 2.2. Matrices locales de coocurrencia
+### 2.2. Local co-occurrence matrices
 
-Los análisis utilizan matrices correspondientes a tres escalas espaciales:
+The analyses use matrices corresponding to three spatial scales:
 
 `data/processed/local_analyses/norway/cooccurrence_matrices/`
 
-| Archivo | Contenido |
+| File | Content |
 | --- | --- |
-| `jaccard_distance_5m.csv` | Distancias de Jaccard de coocurrencia local a 5 m |
-| `jaccard_distance_40m.csv` | Distancias de Jaccard de coocurrencia local a 40 m |
-| `jaccard_distance_400m.csv` | Distancias de Jaccard de coocurrencia local a 400 m |
-| `presence_absence_5m.csv` | Matriz de presencia/ausencia de especies por muestra a 5 m |
-| `presence_absence_40m.csv` | Matriz de presencia/ausencia de especies por muestra a 40 m |
-| `presence_absence_400m.csv` | Matriz de presencia/ausencia de especies por muestra a 400 m |
+| `jaccard_distance_5m.csv` | Jaccard distances of local co-occurrence at 5 m |
+| `jaccard_distance_40m.csv` | Jaccard distances of local co-occurrence at 40 m |
+| `jaccard_distance_400m.csv` | Jaccard distances of local co-occurrence at 400 m |
+| `presence_absence_5m.csv` | Species presence/absence matrix by sample at 5 m |
+| `presence_absence_40m.csv` | Species presence/absence matrix by sample at 40 m |
+| `presence_absence_400m.csv` | Species presence/absence matrix by sample at 400 m |
 
-Estas matrices locales proceden del procesamiento previo de datos de comunidades de Noruega.
+These local matrices originate from previous processing of community data from Norway.
 
-**Su procedimiento de generación todavía debe documentarse completamente.** Por el momento se consideran entradas preexistentes y no se regeneran automáticamente mediante los cuatro scripts de esta carpeta.
+**Their generation procedure still needs to be fully documented.** They are currently considered pre-existing inputs and are not automatically regenerated by the four scripts in this folder.
 
-### 2.3. Datos ambientales y muestras de Noruega
+### 2.3. Environmental and sample data from Norway
 
-El script `07_04_norway_environmental_models.R` utiliza:
+The script `07_04_norway_environmental_models.R` uses:
 
-| Archivo | Ruta |
+| File | Path |
 | --- | --- |
 | `env_full-001.tif` | `data/raw/local_analyses/norway/environmental/` |
 | `sample_info_5m_ready.csv` | `data/raw/local_analyses/norway/samples/5m/` |
 | `sample_info_40m_ready.csv` | `data/raw/local_analyses/norway/samples/40m/` |
 | `sample_info.csv` | `data/raw/local_analyses/norway/samples/400m/` |
 
-Además, utiliza el archivo procesado:
+It also uses the processed file:
 
 `data/processed/local_analyses/norway/community_expected_cooccurrence_probability_all_filt.csv`
 
-Este último archivo es generado por `07_03_local_residual_analysis.R`.
+This last file is generated by `07_03_local_residual_analysis.R`.
 
-## 3. Metodología
+## 3. Methodology
 
-### 3.1. Tests de Mantel locales
+### 3.1. Local Mantel tests
 
 **Script:** `07_01_local_mantel_tests.Rmd`
 
-Este análisis compara las matrices globales de nicho con las matrices de coocurrencia local de las tres escalas espaciales.
+This analysis compares the global niche matrices with the local co-occurrence matrices at the three spatial scales.
 
-Se consideran tres métricas de nicho:
+Three niche metrics are considered:
 
-- Jaccard de hipervolúmenes.
-- Schoener D.
-- Distancia entre centroides de los hipervolúmenes.
+- Hypervolume Jaccard index.
+- Schoener's D.
+- Distance between hypervolume centroids.
 
-Para cada escala se identifican las especies compartidas entre las matrices comparadas.
+For each scale, the species shared between the compared matrices are identified.
 
-Se aplica el test de Mantel con:
+The Mantel test is applied with:
 
-- Correlación de Pearson.
-- 9.999 permutaciones.
-- Tres escalas espaciales: 5 m, 40 m y 400 m.
+- Pearson correlation.
+- 9,999 permutations.
+- Three spatial scales: 5 m, 40 m, and 400 m.
 
-El procedimiento genera nueve comparaciones entre métricas de nicho y escalas espaciales.
+The procedure generates nine comparisons between niche metrics and spatial scales.
 
-Las similitudes de Jaccard y Schoener D se transforman en disimilitudes mediante `1 - similitud` antes de las comparaciones correspondientes.
+Jaccard and Schoener's D similarities are transformed into dissimilarities using `1 - similitud` before the corresponding comparisons.
 
-### 3.2. Coocurrencia observada frente a esperada
+### 3.2. Observed versus expected co-occurrence
 
 **Script:** `07_02_expected_vs_observed_cooccurrence.Rmd`
 
-Este análisis estudia la relación entre la similitud de nicho global y la coocurrencia local.
+This analysis examines the relationship between global niche similarity and local co-occurrence.
 
-Se utilizan las matrices globales de Jaccard y Schoener D junto con las matrices locales de coocurrencia de 5, 40 y 400 m.
+The global Jaccard and Schoener's D matrices are used together with the local co-occurrence matrices at 5, 40, and 400 m.
 
-El script realiza comparaciones entre los valores observados y los valores esperados definidos por el procedimiento original.
+The script compares observed values with the expected values defined by the original procedure.
 
-Los residuos se calculan a partir de la diferencia entre la coocurrencia observada localmente y los valores esperados derivados de las métricas globales de nicho.
+Residuals are calculated as the difference between locally observed co-occurrence and expected values derived from the global niche metrics.
 
-También incluye regresiones, análisis de regresión cuantílica y comparaciones de residuos entre escalas espaciales.
+It also includes regressions, quantile regression analyses, and comparisons of residuals across spatial scales.
 
-El resultado principal es `residuals_diff_obs_exp.csv`, que constituye una entrada del siguiente script.
+The main output is `residuals_diff_obs_exp.csv`, which is an input to the next script.
 
-### 3.3. Probabilidad esperada de coocurrencia por comunidad
+### 3.3. Expected co-occurrence probability by community
 
 **Script:** `07_03_local_residual_analysis.R`
 
-Este script utiliza:
+This script uses:
 
-- Las matrices locales de presencia/ausencia por muestra.
-- Los residuos por pareja de especies calculados en `07_02`.
+- The local presence/absence matrices by sample.
+- The species-pair residuals calculated in `07_02`.
 
-El procedimiento:
+The procedure:
 
-1. Normaliza los nombres de especies.
-2. Transforma el valor de residuo mediante `expected_prob = (residual + 1) / 2`, siguiendo el cálculo original.
-3. Identifica las especies presentes en cada muestra.
-4. Genera las combinaciones posibles de parejas de especies.
-5. Recupera los valores de probabilidad esperada correspondientes a cada pareja.
-6. Calcula la media, mediana y desviación estándar para cada comunidad.
-7. Excluye las comunidades sin parejas válidas.
-8. Compara los valores entre escalas mediante Kruskal-Wallis.
-9. Genera una figura combinada de violín y diagrama de cajas.
+1. Normalizes species names.
+2. Transforms the residual value using `expected_prob = (residual + 1) / 2`, following the original calculation.
+3. Identifies the species present in each sample.
+4. Generates all possible species-pair combinations.
+5. Retrieves the expected probability values corresponding to each pair.
+6. Calculates the mean, median, and standard deviation for each community.
+7. Excludes communities without valid pairs.
+8. Compares values across scales using Kruskal-Wallis.
+9. Generates a combined violin and box plot.
 
-La interpretación de `expected_prob` depende de la definición y transformación de los residuos del análisis anterior; esta conversión debe contrastarse durante la validación metodológica.
+The interpretation of `expected_prob` depends on the definition and transformation of residuals from the preceding analysis; this conversion must be checked during methodological validation.
 
-El producto principal es:
+The main product is:
 
 `community_expected_cooccurrence_probability_all_filt.csv`
 
-Este archivo contiene las probabilidades resumidas por muestra y escala espacial y se utiliza posteriormente en los modelos ambientales.
+This file contains probabilities summarized by sample and spatial scale and is subsequently used in the environmental models.
 
-### 3.4. Modelos ambientales de Noruega
+### 3.4. Environmental models for Norway
 
 **Script:** `07_04_norway_environmental_models.R`
 
-Este análisis relaciona las probabilidades esperadas de coocurrencia con las condiciones ambientales de las comunidades locales.
+This analysis relates expected co-occurrence probabilities to the environmental conditions of local communities.
 
-El script:
+The script:
 
-1. Extrae doce variables ambientales del ráster original para las muestras de 5, 40 y 400 m.
-2. Une la información ambiental con la probabilidad media esperada de coocurrencia.
-3. Evalúa las correlaciones entre variables ambientales.
-4. Calcula factores de inflación de la varianza (VIF).
-5. Ajusta modelos lineales separados por escala espacial utilizando once predictores estandarizados.
-6. Genera una figura de coeficientes con intervalos de confianza.
-7. Realiza selección de modelos mediante AIC y `MuMIn::dredge()`.
-8. Calcula la importancia relativa de los predictores.
+1. Extracts twelve environmental variables from the original raster for the 5, 40, and 400 m samples.
+2. Joins environmental information with the mean expected co-occurrence probability.
+3. Evaluates correlations among environmental variables.
+4. Calculates variance inflation factors (VIF).
+5. Fits separate linear models by spatial scale using eleven standardized predictors.
+6. Generates a coefficient plot with confidence intervals.
+7. Performs model selection using AIC and `MuMIn::dredge()`.
+8. Calculates the relative importance of predictors.
 
-El script conserva la selección de variables y el procedimiento estadístico del análisis original.
+The script retains the variable selection and statistical procedure of the original analysis.
 
-## 4. Archivos de salida
+## 4. Output files
 
-### 4.1. Tests de Mantel
+### 4.1. Mantel tests
 
 `results/local_analyses/mantel/`
 
@@ -181,7 +183,7 @@ mantel/
     └── line_plot.png
 ```
 
-### 4.2. Coocurrencia observada frente a esperada
+### 4.2. Observed versus expected co-occurrence
 
 `results/local_analyses/expected_vs_observed/`
 
@@ -194,13 +196,13 @@ expected_vs_observed/
     └── residual_boxplot.png
 ```
 
-### 4.3. Análisis de residuos locales
+### 4.3. Local residual analysis
 
-El resultado procesado utilizado posteriormente por los modelos ambientales se guarda en:
+The processed result subsequently used by the environmental models is saved in:
 
 `data/processed/local_analyses/norway/community_expected_cooccurrence_probability_all_filt.csv`
 
-Los resultados descriptivos y gráficos se guardan en:
+Descriptive and graphical results are saved in:
 
 ```text
 results/local_analyses/residuals/
@@ -209,7 +211,7 @@ results/local_analyses/residuals/
     └── Mean_expected_cooccurrence_probability_boxplot.png
 ```
 
-### 4.4. Modelos ambientales de Noruega
+### 4.4. Environmental models for Norway
 
 `results/local_analyses/norway/environmental_models/`
 
@@ -222,16 +224,16 @@ environmental_models/
     └── Environmental_effects_coefplot.png
 ```
 
-No se exportan automáticamente todos los objetos estadísticos intermedios, siguiendo la decisión de evitar resultados redundantes.
+Not all intermediate statistical objects are exported automatically, following the decision to avoid redundant results.
 
-## 5. Dependencias y orden de ejecución
+## 5. Dependencies and execution order
 
-El flujo principal de los análisis locales es:
+The main local-analysis workflow is:
 
 ```text
-Matrices globales de nicho
+Global niche matrices
             +
-Matrices locales de coocurrencia
+Local co-occurrence matrices
             |
             +----> 07_01_local_mantel_tests.Rmd
             |
@@ -240,7 +242,7 @@ Matrices locales de coocurrencia
                            v
                   residuals_diff_obs_exp.csv
                            |
-             + Matrices presencia/ausencia
+             + Presence/absence matrices
                            |
                            v
                 07_03_local_residual_analysis.R
@@ -248,63 +250,63 @@ Matrices locales de coocurrencia
                            v
        community_expected_cooccurrence_probability_all_filt.csv
                            |
-               + Datos ambientales locales
+               + Local environmental data
                            |
                            v
              07_04_norway_environmental_models.R
 ```
 
-**Orden recomendado:**
+**Recommended order:**
 
 1. `07_01_local_mantel_tests.Rmd`
 2. `07_02_expected_vs_observed_cooccurrence.Rmd`
 3. `07_03_local_residual_analysis.R`
 4. `07_04_norway_environmental_models.R`
 
-El primer script puede ejecutarse independientemente de los otros tres, siempre que estén disponibles las matrices globales y locales.
+The first script can be run independently of the other three, provided that the global and local matrices are available.
 
-Los scripts `07_02`, `07_03` y `07_04` sí presentan dependencias sucesivas entre resultados.
+The scripts `07_02`, `07_03`, and `07_04` do have successive dependencies on results.
 
-## 6. Relación con otras etapas del proyecto
+## 6. Relationship with other project stages
 
-**Análisis globales:**
+**Global analyses:**
 
 `06_global_analyses/`
 
-Proporcionan las matrices de similitud y distancia de nicho utilizadas en las comparaciones locales.
+They provide the niche-similarity and distance matrices used in the local comparisons.
 
-**Procesamiento local externo:**
+**External local processing:**
 
-Las matrices de presencia/ausencia y distancia de Jaccard locales proceden de un procesamiento previo de datos comunitarios de Noruega.
+The local presence/absence and Jaccard-distance matrices originate from previous processing of community data from Norway.
 
-Este procesamiento todavía no está incorporado como una etapa reproducible dentro del repositorio.
+This processing has not yet been incorporated as a reproducible stage within the repository.
 
-**Figuras:**
+**Figures:**
 
-Las figuras principales de esta etapa se generan directamente desde sus respectivos scripts.
+The main figures for this stage are generated directly from their respective scripts.
 
-No se mantienen copias independientes del mismo código gráfico en `08_figures/`.
+No independent copies of the same plotting code are maintained in `08_figures/`.
 
-## 7. Reproducibilidad y estado
+## 7. Reproducibility and status
 
-Los cuatro scripts se han reorganizado para utilizar rutas relativas al proyecto mediante `here()`.
+The four scripts have been reorganized to use project-relative paths through `here()`.
 
-Se han conservado los procedimientos científicos, las escalas espaciales y las principales exportaciones de los análisis originales.
+The scientific procedures, spatial scales, and main exports of the original analyses have been preserved.
 
-**Estado actual: scripts reorganizados, pero pendientes de ejecución integral y validación numérica frente a los resultados históricos.**
+**Current status: reorganized scripts, but pending end-to-end execution and numerical validation against historical results.**
 
-Antes de considerar reproducida esta etapa será necesario comprobar:
+Before this stage can be considered reproduced, the following must be checked:
 
-- La procedencia y construcción de las matrices locales de coocurrencia y presencia/ausencia.
-- La correspondencia taxonómica entre especies de las matrices globales y locales.
-- La alineación de las matrices utilizadas en los tests de Mantel.
-- Los coeficientes y valores de significación de los análisis históricos.
-- La definición de coocurrencia esperada y la interpretación de los residuos.
-- La transformación de residuos a probabilidades esperadas de coocurrencia.
-- El número de muestras y comunidades conservadas por escala.
-- Los resultados de los modelos ambientales y su selección mediante AIC.
-- La correspondencia entre las figuras originales y las regeneradas.
+- The provenance and construction of the local co-occurrence and presence/absence matrices.
+- The taxonomic correspondence between species in the global and local matrices.
+- The alignment of matrices used in the Mantel tests.
+- The coefficients and significance values of the historical analyses.
+- The definition of expected co-occurrence and interpretation of residuals.
+- The transformation of residuals into expected co-occurrence probabilities.
+- The number of samples and communities retained at each scale.
+- The results of the environmental models and their selection using AIC.
+- The correspondence between original and regenerated figures.
 
-Los datos ambientales y comunitarios de gran tamaño se mantienen fuera del repositorio Git por el momento.
+Large environmental and community datasets are currently kept outside the Git repository.
 
-La reorganización de los scripts no implica que sus resultados hayan sido reproducidos o certificados numéricamente.
+Reorganization of the scripts does not imply that their results have been reproduced or numerically certified.

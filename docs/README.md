@@ -1,20 +1,22 @@
-# Documentación del código del estudio
+# Documentation of the study code
 
-- source_inventory.csv: 64 archivos fuente inventariados; 22 incorporados y 42 registrados sin copia.
-- sanitization_log.csv: ubicación y clase de cada sustitución pública, sin valores privados originales.
-- integrity_summary.csv: comprobaciones de integridad de fuentes, copias, validaciones y manuscrito.
-- public_copy_review.md: alcance de la revisión y sus límites.
-- technical_pending.md: pendientes vigentes de publicación y planificación técnica anterior identificada como histórica.
-- dependencies_observed.csv: bibliotecas declaradas en los scripts, sin instalar ni fijar versiones.
+**Language: [English](README.md) | [Español](README.es.md)**
 
-Las rutas de origen se expresan desde las carpetas 07_GitHub, Niche_bentic_species, 02_DATA_GENOVEVA, 05_ENVIROMENTAL_VARIABLES y 08_GRID_BASE. Se omite deliberadamente la ubicación personal de esas carpetas. La combinación source_root + source_relative_path identifica cada origen, junto con su SHA256.
+- source_inventory.csv: 64 source files inventoried; 22 incorporated and 42 recorded without copying.
+- sanitization_log.csv: location and class of each public substitution, without original private values.
+- integrity_summary.csv: integrity checks for sources, copies, validations, and the manuscript.
+- public_copy_review.md: scope and limitations of the review.
+- technical_pending.md: current pending publication tasks and earlier technical planning identified as historical.
+- dependencies_observed.csv: libraries declared in the scripts, without installation or version pinning.
 
-Estados copied_identical y copied_sanitized_configuration distinguen identidad binaria de saneamiento de configuración. Los estados not_copied_* documentan versiones anteriores, exploración, duplicados o procedencia pendiente; no implican que se haya demostrado que esos archivos carecen de valor científico.
+Source paths are expressed relative to the folders 07_GitHub, Niche_bentic_species, 02_DATA_GENOVEVA, 05_ENVIROMENTAL_VARIABLES, and 08_GRID_BASE. The personal location of these folders is deliberately omitted. The combination source_root + source_relative_path identifies each source, together with its SHA256.
 
-Los scripts seleccionados son las fuentes principales identificadas para documentar el flujo. Esto no certifica por sí solo que cada archivo, ejecutado hoy desde cero, reconstruya todos los productos finales.
+The statuses copied_identical and copied_sanitized_configuration distinguish binary identity from configuration sanitization. The not_copied_* statuses document earlier versions, exploration, duplicates, or pending provenance; they do not imply that these files have been demonstrated to lack scientific value.
 
-- [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md): decisiones científicas y antecedentes de validación; la actualización inicial distingue el alcance vigente del registro histórico.
-- [data_product_inventory.md](data_product_inventory.md) y [data_product_inventory.csv](data_product_inventory.csv): 121 productos documentados con hashes y versiones, sin aprobación de redistribución.
-- [Correspondencia con el manuscrito](../scripts/07_figures/README.md): tablas, figuras, análisis conservados y procedimientos externos.
+The selected scripts are the principal sources identified to document the workflow. This alone does not certify that each file, if run from scratch today, would reconstruct all final products.
 
-El objetivo vigente es un archivo documental, sin prometer automatización ni reproducción numérica verificada. Los informes de revisión e integridad conservan sus fechas y evidencias históricas; no se convierten en certificaciones de ejecución. La infraestructura retirada sigue en el historial de Git. No se regeneran los inventarios ni se eliminan hashes o registros de saneamiento.
+- [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md): scientific decisions and validation background; the initial update distinguishes the current scope from the historical record.
+- [data_product_inventory.md](data_product_inventory.md) and [data_product_inventory.csv](data_product_inventory.csv): 121 products documented with hashes and versions, without redistribution approval.
+- [Correspondence with the manuscript](../scripts/08_figures/README.md): tables, figures, retained analyses, and external procedures.
+
+The current objective is a documentary archive, without promising automation or verified numerical reproduction. Review and integrity reports retain their historical dates and evidence; they do not become certifications of execution. The removed infrastructure remains in the Git history. Inventories are not regenerated, and hashes or sanitization records are not deleted.

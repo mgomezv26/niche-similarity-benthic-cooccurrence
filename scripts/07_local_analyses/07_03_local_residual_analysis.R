@@ -1,10 +1,10 @@
 
 # ============================================================
-# ANALISIS RESIDUOS LOCALES
+# LOCAL RESIDUAL ANALYSIS
 # ============================================================
 
-# Reorganizado desde 04_Analisis_residuos_locales.R.
-# Los calculos y parametros originales se conservan sin validacion numerica.
+# Reorganized from 04_Analisis_residuos_locales.R.
+# The original calculations and parameters are preserved without numerical validation.
 
 library(tidyverse)
 library(dplyr)
@@ -12,15 +12,15 @@ library(scales)
 library(here)
 
 # ============================================================
-# 1. RUTAS RELATIVAS AL REPOSITORIO
+# 1. REPOSITORY-RELATIVE PATHS
 # ============================================================
 
 local_cooccurrence <- here("data", "processed", "local_analyses", "norway", "cooccurrence_matrices")
 residuals_dir <- here("results", "local_analyses", "expected_vs_observed")
 
-# Entrada derivada para el analisis ambiental de Noruega (07_04).
+# Derived input for the environmental analysis of Norway (07_04).
 processed_dir <- here("data", "processed", "local_analyses", "norway")
-# Estadisticas y figura del analisis local.
+# Statistics and figure for the local analysis.
 results_dir <- here("results", "local_analyses", "residuals")
 figures_dir <- file.path(results_dir, "figures")
 dir.create(processed_dir, recursive = TRUE, showWarnings = FALSE)
@@ -39,7 +39,7 @@ if (length(missing_inputs) > 0L) {
 }
 
 # ============================================================
-# 2. CARGAR MATRICES PRESENCIA-AUSENCIA LOCALES
+# 2. LOAD LOCAL PRESENCE-ABSENCE MATRICES
 # ============================================================
 
 pa_5m_raw <- read.csv(
@@ -57,7 +57,7 @@ pa_400m_raw <- read.csv(
 head(pa_400m_raw)
 summary(pa_5m_raw)
 # ============================================================
-# 3. CARGAR RESIDUOS LOCALES
+# 3. LOAD LOCAL RESIDUALS
 # ============================================================
 
 local_residuals <- read.csv(
@@ -69,7 +69,7 @@ summary(local_residuals)
 length(unique(pa_5m_raw$X)) # 85179
 
 # ============================================================
-# 4. FUNCIONES AUXILIARES
+# 4. HELPER FUNCTIONS
 # ============================================================
 
 clean_sp_names <- function(x) {
@@ -81,7 +81,7 @@ clean_sp_names <- function(x) {
     gsub("\\s+", " ", .)
 }
 
-# matrices de presencia: SampID × species
+# presence matrices: SampID × species
 fix_pa_matrix <- function(df) { 
   
   df <- as.data.frame(df)
@@ -116,8 +116,8 @@ local_residuals$sp1 <- clean_sp_names(local_residuals$sp1)
 local_residuals$sp2 <- clean_sp_names(local_residuals$sp2)
 
 head(local_residuals)
-# Se conserva la eliminacion de la primera columna del CSV historico.
-# Revisar su correspondencia con el formato exportado por 07_02 antes de ejecutar.
+# Removal of the first column of the historical CSV is retained.
+# Check its correspondence with the format exported by 07_02 before running.
 local_residuals <- local_residuals[ ,-1]
 names(local_residuals)
 
@@ -189,7 +189,7 @@ calculate_community_expected_prob <- function(pa_mat,
 
 
 # ============================================================
-# 8. RESIDUOS COMUNITARIOS POR ESCALA
+# 8. COMMUNITY RESIDUALS BY SCALE
 # ============================================================
 
 community_5m <- calculate_community_expected_prob(pa_5m, local_residuals, "5m")
@@ -230,7 +230,7 @@ write.csv(n_communiy, file.path(results_dir, "info_n_community.csv"),row.names =
 #  5m    85179    59308      25871         69.6
 
 
-# FILTRAR COMUNIDADES SIN PARES
+# FILTER COMMUNITIES WITHOUT PAIRS
 community_resid_all_filt <- community_resid_all %>%
   filter(n_pairs > 0)
 

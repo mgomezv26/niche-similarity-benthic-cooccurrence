@@ -1,27 +1,28 @@
+# 04 — Principal Component Analysis (PCA)
 
-# 04 — Análisis de Componentes Principales (PCA)
+**Language: [English](README.md) | [Español](README.es.md)**
 
-Esta carpeta contiene el análisis de componentes principales (PCA) utilizado para reducir la dimensionalidad ambiental antes de construir los hipervolúmenes de nicho de las especies bentónicas.
+This folder contains the principal component analysis (PCA) used to reduce environmental dimensionality before constructing niche hypervolumes for benthic species.
 
-La PCA se realiza sobre las variables ambientales extraídas para las celdas marinas de 0,1° pertenecientes a las regiones biogeográficas MEOW.
+The PCA is performed on environmental variables extracted for the 0.1° marine cells belonging to the MEOW biogeographic regions.
 
 ## 1. Scripts
 
-| Script | Entradas | Salidas |
+| Script | Inputs | Outputs |
 | --- | --- | --- |
-| `04_01_environmental_pca.R` | `grid_meow_env_clean_0.1deg.gpkg` | Grid con PC1–PC6, tablas de varianza explicada, cargas ambientales y figuras de PCA |
+| `04_01_environmental_pca.R` | `grid_meow_env_clean_0.1deg.gpkg` | Grid with PC1–PC6, explained-variance tables, environmental loadings, and PCA figures |
 
-El script procede del antiguo `11_PCA_REALM.R` y se ha reorganizado para utilizar rutas relativas mediante `here()`.
+The script originates from the former `11_PCA_REALM.R` and has been reorganized to use relative paths through `here()`.
 
-## 2. Datos de entrada
+## 2. Input data
 
-**Archivo principal:**
+**Main file:**
 
 `data/processed/grids/grid_meow_env_clean_0.1deg.gpkg`
 
-Este GeoPackage procede de `03_03_extract_environmental.R` y contiene las celdas marinas de 0,1° con las variables ambientales armonizadas y extraídas.
+This GeoPackage is produced by `03_03_extract_environmental.R` and contains the 0.1° marine cells with harmonized and extracted environmental variables.
 
-Las diez variables utilizadas para la PCA son:
+The ten variables used for PCA are:
 
 - `bathymetry`
 - `o2`
@@ -34,75 +35,75 @@ Las diez variables utilizadas para la PCA son:
 - `chl`
 - `r_sediment_size`
 
-Las nueve primeras variables continuas se estandarizaron durante el procesamiento ambiental anterior. El tamaño del sedimento se estandariza en el script de PCA.
+The first nine continuous variables were standardized during the previous environmental processing. Sediment size is standardized in the PCA script.
 
-## 3. Metodología
+## 3. Methodology
 
-El script realiza las siguientes operaciones:
+The script performs the following operations:
 
-1. Carga el grid ambiental definitivo y elimina temporalmente la geometría para el análisis estadístico.
-2. Selecciona las diez variables ambientales.
-3. Estandariza el tamaño del sedimento.
-4. Ejecuta la PCA mediante `prcomp()`, con centrado y sin una segunda estandarización global (`center = TRUE`, `scale. = FALSE`).
-5. Calcula la varianza explicada por cada componente.
-6. Evalúa la importancia de los componentes mediante el criterio Broken Stick.
-7. Conserva los seis primeros componentes principales (PC1–PC6), siguiendo el análisis original del manuscrito.
-8. Incorpora las puntuaciones de la PCA al grid espacial.
-9. Exporta el GeoPackage final, las tablas y las figuras.
+1. Loads the final environmental grid and temporarily removes geometry for statistical analysis.
+2. Selects the ten environmental variables.
+3. Standardizes sediment size.
+4. Performs PCA using `prcomp()`, with centering and without a second global standardization (`center = TRUE`, `scale. = FALSE`).
+5. Calculates the variance explained by each component.
+6. Evaluates component importance using the Broken Stick criterion.
+7. Retains the first six principal components (PC1–PC6), following the original manuscript analysis.
+8. Adds PCA scores to the spatial grid.
+9. Exports the final GeoPackage, tables, and figures.
 
-Los seis componentes seleccionados explicaban conjuntamente el 89,96 % de la varianza ambiental en el análisis histórico.
+The six selected components jointly explained 89.96% of environmental variance in the historical analysis.
 
-El criterio Broken Stick se conserva como evaluación de los componentes, pero no modifica automáticamente la selección fija de PC1–PC6.
+The Broken Stick criterion is retained for component assessment but does not automatically modify the fixed selection of PC1–PC6.
 
-## 4. Archivos de salida
+## 4. Output files
 
-### GeoPackage principal
+### Main GeoPackage
 
 `data/processed/grids/grid_meow_env_pca6_0.1deg.gpkg`
 
-Contiene las geometrías originales del grid, los atributos ambientales y las puntuaciones de las seis componentes principales.
+It contains the original grid geometries, environmental attributes, and scores for the six principal components.
 
-Este archivo constituye una entrada fundamental para los análisis de hipervolúmenes y similitud de nicho.
+This file is a key input for hypervolume and niche-similarity analyses.
 
-### Tablas y figuras
+### Tables and figures
 
 `results/pca/`
 
-Esta carpeta contiene los resultados auxiliares del análisis, como:
+This folder contains auxiliary analysis results, such as:
 
-- Varianza individual y acumulada de las componentes.
-- Comparación con el criterio Broken Stick.
-- Cargas ambientales de las componentes.
-- Figuras de la PCA y de la varianza explicada.
+- Individual and cumulative component variance.
+- Comparison with the Broken Stick criterion.
+- Environmental component loadings.
+- PCA and explained-variance figures.
 
-Los nombres concretos de las tablas y figuras deben comprobarse frente a las exportaciones del script.
+The specific table and figure names must be checked against the script's exports.
 
-## 5. Dependencias
+## 5. Dependencies
 
-**Etapa anterior:**
+**Previous stage:**
 
 `03_spatial_processing/03_03_extract_environmental.R`
 
-**Etapa posterior:**
+**Next stage:**
 
 `05_hypervolumes/05_01_build_gaussian_hypervolumes.R`
 
-Flujo de procesamiento:
+Processing workflow:
 
-`Grid ambiental de 0,1° → PCA → PC1–PC6 por celda → Hipervolúmenes gaussianos`
+`0.1° environmental grid → PCA → PC1–PC6 per cell → Gaussian hypervolumes`
 
-## 6. Reproducibilidad y estado
+## 6. Reproducibility and status
 
-El script ha sido reorganizado a partir del análisis original, conservando la selección de variables, el procedimiento de PCA, Broken Stick y los seis componentes utilizados en el manuscrito.
+The script has been reorganized from the original analysis, preserving the variable selection, PCA procedure, Broken Stick, and six components used in the manuscript.
 
-No se ha realizado todavía una ejecución completa ni una validación numérica de la versión reorganizada.
+A complete run and numerical validation of the reorganized version have not yet been performed.
 
-Antes de considerar reproducidos los resultados históricos, será necesario comprobar:
+Before the historical results can be considered reproduced, the following must be checked:
 
-- El número de celdas ambientales incluidas.
-- La ausencia de valores faltantes en las variables seleccionadas.
-- La varianza acumulada de PC1–PC6 frente al 89,96 % histórico.
-- Las cargas ambientales y las puntuaciones de las componentes.
-- La correspondencia entre el GeoPackage histórico y el nuevo.
+- The number of environmental cells included.
+- The absence of missing values in the selected variables.
+- The cumulative variance of PC1–PC6 against the historical 89.96%.
+- The environmental loadings and component scores.
+- The correspondence between the historical and new GeoPackages.
 
-Los datos espaciales de gran tamaño se mantienen fuera del repositorio Git por el momento. El código debe permitir regenerar los productos cuando estén disponibles los archivos de entrada.
+Large spatial datasets are currently kept outside the Git repository. The code should allow the products to be regenerated when the input files are available.

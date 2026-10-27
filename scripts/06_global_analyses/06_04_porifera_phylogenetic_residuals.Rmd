@@ -57,7 +57,7 @@ if (length(missing_files)) {
 ```
 
 
-# Leer species_order exportado previamente
+# Read previously exported species_order
 
 ```{r}
 species_order <- read.csv(
@@ -66,14 +66,14 @@ species_order <- read.csv(
 )[[1]]
 ```
 
-# Leer tabla con species + phylum
+# Read the table with species + phylum
 
 ```{r}
 species_hv_names_tax_Porifera <- read_excel(taxonomy_file, sheet = "Porifera")
 head(species_hv_names_tax_Porifera)
 ```
 
-# Leer residuos
+# Read residuals
 
 ```{r}
 resid_schoener <- readRDS(file.path(mantel_dir, "mantel_residuals_schoener.rds"))
@@ -82,7 +82,7 @@ resid_jaccard <- readRDS(file.path(mantel_dir, "mantel_residuals_jaccard.rds"))
 
 # CNIDARIA
 
-## Leer matriz genética COI de Porifera
+## Read the COI genetic matrix for Porifera
 
 ```{r}
 genetic_long <- read_excel(
@@ -93,7 +93,7 @@ genetic_long <- read_excel(
 head(genetic_long)
 names(genetic_long)
 ```
-## Preparar tabla código COI -> especie
+## Prepare the COI code -> species table
 
 ```{r}
 norm <- function(x) enc2utf8(trimws(gsub("\\s+", " ", x)))
@@ -113,7 +113,7 @@ coi_map
 ```
 
 
-## Limpiar matriz genética larga
+## Clean the long-format genetic matrix
 
 ```{r}
 genetic_long_clean <- genetic_long %>%
@@ -159,7 +159,7 @@ length(unique(c(genetic_long_clean$sp1, genetic_long_clean$sp2)))
 sort(unique(c(genetic_long_clean$sp1, genetic_long_clean$sp2)))
 ```
 
-## Crear matriz genética simétrica
+## Create a symmetric genetic matrix
 
 ```{r}
 gen_species <- sort(unique(c(genetic_long_clean$sp1, genetic_long_clean$sp2)))
@@ -185,7 +185,7 @@ diag(gen_mat) <- 0
 gen_mat[seq_len(min(5, nrow(gen_mat))), seq_len(min(5, ncol(gen_mat)))]
 ```
 
-## Convertir residuos a matriz con nombres
+## Convert residuals to a matrix with names
 
 ```{r}
 make_resid_mat <- function(resid_obj, species_order) {
@@ -201,7 +201,7 @@ make_resid_mat <- function(resid_obj, species_order) {
 }
 ```
 
-## Crear matrices de residuos con nombres
+## Create residual matrices with names
 
 ```{r}
 resid_schoener_mat <- make_resid_mat(resid_schoener, species_order)
@@ -210,7 +210,7 @@ resid_jaccard_mat  <- make_resid_mat(resid_jaccard, species_order)
 head(resid_schoener_mat)
 ```
 
-## Alinear residuos con especies de Porifera con COI
+## Align residuals with Porifera species with COI
 
 ```{r}
 species_common_schoener <- Reduce(intersect, list(
@@ -233,7 +233,7 @@ if (length(species_common_schoener) < 3L || length(species_common_jaccard) < 3L)
 ```
 
 
-## Subset final
+## Final subset
 
 ```{r}
 resid_schoener_porifera <- resid_schoener_mat[species_common_schoener, species_common_schoener]
@@ -244,7 +244,7 @@ gen_porifera_jaccard  <- gen_mat[species_common_jaccard, species_common_jaccard]
 ```
 
 
-## Mantel: residuos vs distancia genética
+## Mantel: residuals vs genetic distance
 
 ```{r}
 set.seed(123) # Reproducible permutations; p-values may differ from the historical HTML.
@@ -267,9 +267,9 @@ mantel_resid_gen_jaccard
 ```
 
 
-## Guardar residuos y resultados
+## Save residuals and results
 
-Estas salidas se guardan por separado de los residuos globales generados en `06_02`. La matriz genetica se reconstruye en memoria a partir del Excel original; no se duplica en CSV/RDS.
+These outputs are saved separately from the global residuals generated in `06_02`. The genetic matrix is reconstructed in memory from the original Excel file; it is not duplicated in CSV/RDS.
 
 ```{r}
 saveRDS(resid_schoener_porifera, file.path(output_dir, "resid_schoener_porifera_COI.rds"))
@@ -305,7 +305,7 @@ mantel_summary
 ## PLOTS
 
 ```{r}
-# preparar datos (solo triángulo superior)
+# prepare data (upper triangle only)
 get_upper <- function(mat) mat[upper.tri(mat)]
 
 df_plot_schoener <- data.frame(
@@ -317,7 +317,7 @@ plot_phylo_schoener <- ggplot(df_plot_schoener, aes(x = genetic, y = schoener_re
   geom_point(alpha = 0.8, size = 2, shape = 16, color = "#80cdc1") +
   geom_smooth(method = "lm", se = TRUE,
             color = "#018571",
-            fill = "grey80",   # ← cambia el gris
+            fill = "grey80",   # ← change the shade of gray
             alpha = 0.4,
             linewidth = 1)+
   labs(
@@ -352,7 +352,7 @@ plot_phylo_jaccard <- ggplot(df_plot_jaccard, aes(x = genetic, y = jaccard_resid
   geom_point(alpha = 0.8, size = 2, shape = 16, color = "#a6cee3") +
   geom_smooth(method = "lm", se = TRUE,
             color = "#1f78b4",
-            fill = "grey80",   # ← cambia el gris
+            fill = "grey80",   # ← change the shade of gray
             alpha = 0.4,
             linewidth = 1) +
   labs(

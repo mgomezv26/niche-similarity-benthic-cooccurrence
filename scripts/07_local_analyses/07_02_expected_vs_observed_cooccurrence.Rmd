@@ -73,7 +73,7 @@ if (length(missing_files)) {
 
 # LOAD GLOBAL NICHE OVERLAP MATRICES
 
-la coocurrencia esperadaNO se calcula a partir de coocurrencia global sino a partir de: SIMILITUD DE NICHO GLOBAL
+Expected co-occurrence is NOT calculated from global co-occurrence but from: GLOBAL NICHE SIMILARITY
 
 ```{r}
 schoener_matrix <- read.csv(paste0(global_matrix_dir,"/schoener_matrix.csv"))
@@ -89,7 +89,7 @@ jaccard_400m_mat <- read.csv(paste0(local_coocurrence,"/jaccard_distance_400m.cs
 
 ```
 
-## Corregir las matrices
+## Correct the matrices
 
 ```{r}
 clean_names <- function(x) {
@@ -123,7 +123,7 @@ jaccard_40m_mat <- fix_square_matrix(jaccard_40m_mat)
 jaccard_400m_mat <- fix_square_matrix(jaccard_400m_mat)
 ```
 
-## Transformarlas a similitud
+## Transform them to similarity
 
 ```{r}
 local_sim_5m <- 1 - jaccard_5m_mat
@@ -135,7 +135,7 @@ local_sim_400m <- 1 - jaccard_400m_mat
 summary(local_sim_5m)
 ```
 
-# FILTRAR ESPECIES COMUNES POR ESCALA
+# FILTER COMMON SPECIES BY SCALE
 
 ## Scale 5 m
 
@@ -156,7 +156,7 @@ exp_5m <- niche_jaccard_matrix[
 ]
 ```
 
-### PASAR A FORMATO PAIRWISE
+### CONVERT TO PAIRWISE FORMAT
 
 ```{r}
 obs_5m_df <- as.data.frame(as.table(obs_5m))
@@ -237,7 +237,7 @@ exp_40m <- niche_jaccard_matrix[
 ]
 ```
 
-### PASAR A FORMATO PAIRWISE
+### CONVERT TO PAIRWISE FORMAT
 
 ```{r}
 obs_40m_df <- as.data.frame(as.table(obs_40m))
@@ -318,7 +318,7 @@ exp_400m <- niche_jaccard_matrix[
 ]
 ```
 
-### PASAR A FORMATO PAIRWISE
+### CONVERT TO PAIRWISE FORMAT
 
 ```{r}
 obs_400m_df <- as.data.frame(as.table(obs_400m))
@@ -435,9 +435,9 @@ ggsave(file.path(save_path_figs, "global_niche_vs_local_cooccurrence_scalesv1.pn
 ```
 
 
-# REGRESIÓN CUANTILICA
+# QUANTILE REGRESSION
 
-## ¿Predice el nicho global igual las comunidades locales con baja, media y alta coexistencia?
+## Does the global niche predict local communities with low, intermediate, and high coexistence equally well?
 
 
 ```{r}
@@ -487,13 +487,13 @@ library(ggplot2)
 library(dplyr)
 library(quantreg)
 
-# Asegurar orden de escalas
+# Ensure the order of scales
 all_pairs <- all_pairs %>%
   mutate(
     scale = factor(scale, levels = c("5m", "40m", "400m"))
   )
 
-# Reajustar modelos cuantílicos
+# Refit quantile regression models
 rq_75 <- rq(
   observed_local ~ expected_global * scale,
   tau = 0.75,
@@ -508,7 +508,7 @@ rq_90 <- rq(
   method = "fn"
 )
 
-# Crear datos de predicción
+# Create prediction data
 pred_grid <- expand.grid(
   expected_global = seq(
     min(all_pairs$expected_global, na.rm = TRUE),
@@ -532,14 +532,14 @@ pred_90 <- pred_grid %>%
 
 pred_all <- bind_rows(pred_75, pred_90)
 
-# Colores
+# Colors
 colors <- c(
   "5m"   = "#80cdc1",
   "40m"  = "#a6cee3",
   "400m" = "#ba8bc9"
 )
 
-# Figura
+# Figure
 fig_quantile <- ggplot() +
   geom_point(
     data = all_pairs,
@@ -590,16 +590,16 @@ ggsave(file.path(save_path_figs, "global_niche_vs_local_cooccurrence_scales_face
 
 
 
-<!-- # ¿El nicho global predice la coocurrencia local? - Modelo lineal -->
+<!-- # Does the global niche predict local co-occurrence? - Linear model -->
 
-<!-- Variable respuesta: observed_local  -->
+<!-- Response variable: observed_local  -->
 <!-- Predictor: expected_global -->
-<!-- Interacción: expected_global * scale --> es lo mimso que expected_global + scale + expected_global:scale -->
+<!-- Interaction: expected_global * scale --> is equivalent to expected_global + scale + expected_global:scale -->
 
 
-<!-- expected_global -> ¿el nicho predice coexistencia? -->
-<!-- scale->	¿la coexistencia cambia con escala? -->
-<!-- expected_global:scale	-> ¿la fuerza predictiva cambia con escala? -->
+<!-- expected_global -> does the niche predict coexistence? -->
+<!-- scale->	does coexistence change with scale? -->
+<!-- expected_global:scale	-> does predictive strength change with scale? -->
 
 <!-- observed_local=β0+β1(expected_global)+β2(scale)+β3(expected_global×scale)+ε -->
 
@@ -692,7 +692,7 @@ ggsave(file.path(save_path_figs, "global_niche_vs_local_cooccurrence_scales_face
 
 
 
-# ANALIZAR RESIDUOS
+# ANALYZE RESIDUALS
 
 ```{r}
 ggplot(all_pairs,
@@ -785,17 +785,17 @@ all_pairs %>%
   )
 ```
 
-### comparar variance
+### compare variance
 
 
 ```{r}
-# comparar variance
+# compare variance
 
 kruskal.test(residual ~ scale,
              data = all_pairs)
 ```
 
-### porcentaje residuals extremos
+### percentage of extreme residuals
 
 ```{r}
 all_pairs %>%

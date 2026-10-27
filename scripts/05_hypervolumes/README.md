@@ -1,28 +1,30 @@
-# 05 — Hipervolúmenes y métricas de nicho
+# 05 — Hypervolumes and niche metrics
 
-Esta carpeta contiene los scripts para construir los hipervolúmenes gaussianos de las especies bentónicas y calcular las métricas de similitud de nicho utilizadas en los análisis globales. Los scripts se han reorganizado a partir del código histórico, manteniendo como referencia el procedimiento científico original.
+**Language: [English](README.md) | [Español](README.es.md)**
 
-## Scripts y flujo de trabajo
+This folder contains the scripts for constructing Gaussian hypervolumes for benthic species and calculating the niche-similarity metrics used in the global analyses. The scripts have been reorganized from the historical code, retaining the original scientific procedure as the reference.
 
-| Script | Entradas principales | Salidas principales |
+## Scripts and workflow
+
+| Script | Main inputs | Main outputs |
 | --- | --- | --- |
-| `05_01_build_gaussian_hypervolumes.R` | `data/processed/grids/grid_meow_env_pca6_0.1deg.gpkg`; `data/processed/grids/species_grid_assignments.gpkg` | Hipervolúmenes individuales `.rds`, `hv_list_all_species.RData`, probabilidades y recuentos de celdas por especie en `results/hypervolumes/gaussian/` |
-| `05_02_calculate_hypervolume_overlap.R` | `results/hypervolumes/gaussian/hv_list_all_species.RData` | Volúmenes individuales, correspondencia de especies y métricas de solapamiento por parejas en `results/hypervolumes/overlap/` |
-| `05_03_calculate_schoener_d.R` | Grid PCA6, asignaciones de especies e hipervolúmenes gaussianos | Pares de Schoener D, matriz de similitud y bins ambientales muestreados en `results/hypervolumes/schoener/` |
+| `05_01_build_gaussian_hypervolumes.R` | `data/processed/grids/grid_meow_env_pca6_0.1deg.gpkg`; `data/processed/grids/species_grid_assignments.gpkg` | Individual `.rds` hypervolumes, `hv_list_all_species.RData`, probabilities, and cell counts per species in `results/hypervolumes/gaussian/` |
+| `05_02_calculate_hypervolume_overlap.R` | `results/hypervolumes/gaussian/hv_list_all_species.RData` | Individual volumes, species mappings, and pairwise overlap metrics in `results/hypervolumes/overlap/` |
+| `05_03_calculate_schoener_d.R` | PCA6 grid, species assignments, and Gaussian hypervolumes | Schoener's D pairs, similarity matrix, and sampled environmental bins in `results/hypervolumes/schoener/` |
 
-Orden lógico de ejecución: **05_01 → 05_02 y 05_03**. Los scripts `05_02` y `05_03` emplean los resultados de `05_01`, pero no dependen entre sí.
+Logical execution order: **05_01 → 05_02 and 05_03**. The scripts `05_02` and `05_03` use the results of `05_01` but do not depend on each other.
 
-## Decisiones metodológicas conservadas
+## Retained methodological decisions
 
-- Los hipervolúmenes se construyen en el espacio ambiental definido por **PC1–PC6**, calculado previamente en `04_pca/`.
-- Se conserva el criterio de **al menos 10 celdas distintas por especie**, contando una única presencia por combinación especie–celda.
-- La estimación de nicho utiliza `hypervolume_gaussian()` y el ancho de banda de Silverman, siguiendo el script original.
-- Las comparaciones por parejas incluyen las métricas de solapamiento y distancia entre centroides previstas en el análisis histórico.
-- Schoener D se calcula sobre bins ambientales comunes, con coordenadas PCA redondeadas a un decimal, hasta 100 000 bins y muestreo ponderado por disponibilidad ambiental; la semilla configurada es `123`.
+- Hypervolumes are constructed in the environmental space defined by **PC1–PC6**, previously calculated in `04_pca/`.
+- The criterion of **at least 10 distinct cells per species** is retained, counting a single presence per species–cell combination.
+- Niche estimation uses `hypervolume_gaussian()` and Silverman's bandwidth, following the original script.
+- Pairwise comparisons include the overlap and centroid-distance metrics specified in the historical analysis.
+- Schoener's D is calculated on common environmental bins, with PCA coordinates rounded to one decimal place, up to 100 000 bins, and sampling weighted by environmental availability; the configured seed is `123`.
 
-**Precaución:** el script de Schoener vincula especies e hipervolúmenes por nombre para evitar desajustes de orden. Esta protección y otras limpiezas pueden producir diferencias respecto a salidas históricas si el código anterior emparejaba incorrectamente elementos. No se considera demostrada la equivalencia numérica.
+**Caution:** the Schoener script links species and hypervolumes by name to avoid ordering mismatches. This safeguard and other cleanup operations may produce differences from historical outputs if the previous code paired elements incorrectly. Numerical equivalence is not considered demonstrated.
 
-## Organización de resultados
+## Organization of results
 
 ```text
 results/
@@ -32,7 +34,7 @@ results/
     │   ├── hv_probabilities_all_species.rds
     │   ├── hv_probabilities_all_species.csv
     │   ├── hypervolume_<species>.rds
-    │   └── ... tablas de control de celdas por especie
+    │   └── ... tables for checking cell counts per species
     ├── overlap/
     │   ├── individual_volumes_all_species.csv
     │   ├── species_hv_names.csv
@@ -43,15 +45,15 @@ results/
         └── env_bins_sampled_round_1_n_100000.rds
 ```
 
-Los nombres de Schoener con sufijo `n_100000` representan el caso en que se utilizan 100 000 bins; el sufijo debe corresponder al número realmente muestreado. Se acordó **conservar únicamente estos tres productos de Schoener**, evitando CSV y RDS duplicados de probabilidades y tablas intermedias.
+Schoener names with the suffix `n_100000` represent the case in which 100 000 bins are used; the suffix must match the number actually sampled. It was agreed to **retain only these three Schoener products**, avoiding duplicate CSV and RDS files of probabilities and intermediate tables.
 
-## Dependencias con otras etapas
+## Dependencies on other stages
 
-- **Etapa previa:** `04_pca/` genera `grid_meow_env_pca6_0.1deg.gpkg`; `03_spatial_processing/` produce las asignaciones de especies al grid.
-- **Etapa siguiente:** `06_global_analyses/06_02_mantel_tests_and_residuals.Rmd` utiliza `pairwise_hypervolume_overlap_all_species.csv` y el CSV de pares de Schoener D para las pruebas globales de Mantel.
+- **Previous stage:** `04_pca/` generates `grid_meow_env_pca6_0.1deg.gpkg`; `03_spatial_processing/` produces species assignments to the grid.
+- **Next stage:** `06_global_analyses/06_02_mantel_tests_and_residuals.Rmd` uses `pairwise_hypervolume_overlap_all_species.csv` and the Schoener's D pairs CSV for the global Mantel tests.
 
-Las rutas de los scripts reorganizados se definen con `here()` desde la raíz del repositorio, identificada mediante `.here`. Los datos de entrada y los resultados voluminosos pueden conservarse fuera de GitHub, pero deben estar disponibles en las rutas esperadas cuando se ejecuten los análisis.
+Paths in the reorganized scripts are defined using `here()` from the repository root, identified by `.here`. Input data and large results may be kept outside GitHub but must be available at the expected paths when the analyses are run.
 
-## Estado y reproducibilidad
+## Status and reproducibility
 
-**Estado: scripts reorganizados; ejecución y validación numérica pendientes.** No se han recalculado ni contrastado aquí los hipervolúmenes ni sus métricas con los resultados históricos. Se conservarán los productos originales como referencia hasta comprobar la concordancia de especies, pares y valores. Los inventarios y hashes históricos, cuando estén disponibles, son documentación de procedencia y no equivalen por sí mismos a una validación del flujo nuevo.
+**Status: reorganized scripts; execution and numerical validation pending.** Neither the hypervolumes nor their metrics have been recalculated or compared with historical results here. The original products will be retained as a reference until agreement in species, pairs, and values has been checked. Historical inventories and hashes, where available, document provenance and do not themselves constitute validation of the new workflow.

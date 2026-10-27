@@ -1,27 +1,29 @@
 # niche-similarity-benthic-cooccurrence
 
-Archivo documental del código del estudio de similitud de nicho y coocurrencia de organismos bentónicos. Conserva 22 scripts científicos seleccionados, sus cálculos originales y los R Markdown completos, organizados en siete etapas.
+**Language: [English](README.md) | [Español](README.es.md)**
 
-**No se ofrece ejecución automatizada ni reproducción numérica verificada.** Los scripts mantienen sus operaciones de escritura y nombres originales; las rutas privadas y los campos de autenticación identificados se sanearon. Los marcadores `__CONFIGURE_PATH_*__` son intencionadamente inoperantes. No ejecutar las copias directamente sobre archivos originales.
+Documentary archive of the code for the study of niche similarity and co-occurrence in benthic organisms. It preserves 22 selected scientific scripts, their original calculations, and the complete R Markdown documents, organized into seven stages.
 
-| Etapa | Contenido documental |
+**Automated execution and verified numerical reproduction are not provided.** The scripts retain their original write operations and names; identified private paths and authentication fields have been sanitized. The `__CONFIGURE_PATH_*__` placeholders are intentionally nonfunctional. Do not run the copies directly on original files.
+
+| Stage | Documentary content |
 | --- | --- |
-| [01_data_acquisition](scripts/01_data_acquisition/README.md) | GBIF, OBIS y CMEMS |
-| [02_data_processing](scripts/02_data_processing/README.md) | Ocurrencias, ambiente, cuadrículas, MEOW y presencia/ausencia local |
-| [03_pca](scripts/03_pca/README.md) | Procedimiento PCA6 |
-| [04_hypervolumes](scripts/04_hypervolumes/README.md) | Hipervolúmenes, solapamiento y Schoener D |
-| [05_global_analyses](scripts/05_global_analyses/README.md) | Coocurrencia, Mantel y residuos; análisis estadístico con distancias genéticas externas |
-| [06_local_analyses](scripts/06_local_analyses/README.md) | MAREANO: cuantiles, residuos, índice comunitario y ambiente; Mantel local con correspondencia editorial pendiente |
-| [07_figures](scripts/07_figures/README.md) | Correspondencia con figuras, tablas y procedimientos externos |
+| [01_data_acquisition](scripts/01_data_acquisition/README.md) | GBIF, OBIS, and CMEMS |
+| [02_data_processing](scripts/02_data_processing/README.md) | Occurrences, environment, grids, MEOW, and local presence/absence |
+| [03_pca](scripts/04_pca/README.md) | PCA6 procedure |
+| [04_hypervolumes](scripts/05_hypervolumes/README.md) | Hypervolumes, overlap, and Schoener's D |
+| [05_global_analyses](scripts/06_global_analyses/README.md) | Co-occurrence, Mantel tests, and residuals; statistical analysis using external genetic distances |
+| [06_local_analyses](scripts/07_local_analyses/README.md) | MAREANO: quantiles, residuals, community index, and environment; local Mantel tests with manuscript correspondence pending |
+| [07_figures](scripts/08_figures/README.md) | Correspondence with figures, tables, and external procedures |
 
-Las etapas de adquisición, procesamiento, PCA e hipervolúmenes documentan trabajo ya realizado; no se reconstruyen ni recalculan productos originales. Se mantienen seis componentes PCA, seleccionados mediante Broken Stick complementado por la varianza acumulada explicada (aproximadamente 89,96 %), y el carácter relativo, no probabilístico calibrado, de `mean_expected_prob`.
+The acquisition, processing, PCA, and hypervolume stages document work already completed; original products are not reconstructed or recalculated. Six PCA components are retained, selected using Broken Stick supplemented by the cumulative explained variance (approximately 89.96%), as is the relative nature of `mean_expected_prob`, which is not a calibrated probability.
 
-Los análisis genéticos fueron realizados externamente por otra persona con software especializado. Los Rmd de Porifera y Cnidaria analizan estadísticamente residuos y matrices genéticas ya obtenidas; no generan esas distancias. La Figura 1 procede de QGIS y la Figura 4 incluye montaje en Affinity. No se inventan scripts para esos procedimientos.
+The genetic analyses were performed externally by another person using specialized software. The Porifera and Cnidaria Rmd documents statistically analyze residuals and previously obtained genetic matrices; they do not generate those distances. Figure 1 originates from QGIS, and Figure 4 includes assembly in Affinity. No scripts are invented for these procedures.
 
-`17_Phylogeny.R` y `17_ISA.R` permanecen excluidos. B0, B1, C y D se documentan separadamente como antecedentes; sus informes completos se recuperarán del ordenador del trabajo, sin volver a ejecutarlos. No se añaden análisis ni materiales suplementarios.
+`17_Phylogeny.R` and `17_ISA.R` remain excluded. B0, B1, C, and D are documented separately as background; their full reports will be retrieved from the work computer without rerunning them. No analyses or supplementary materials are added.
 
-Los inventarios no son manifiestos públicos definitivos ni autorizaciones de redistribución. Datos, resultados y manuscrito no se publican automáticamente. Siguen pendientes la licencia del código, autoría/cita y revisión editorial final.
+The inventories are neither definitive public manifests nor redistribution authorizations. Data, results, and the manuscript are not published automatically. The code license, authorship/citation, and final editorial review remain pending.
 
-Consulte el [índice documental](docs/README.md), el [inventario de procedencia](docs/source_inventory.csv), el [registro de saneamiento](docs/sanitization_log.csv) y los [pendientes de publicación](docs/technical_pending.md).
+See the [documentation index](docs/README.md), [provenance inventory](docs/source_inventory.csv), [sanitization log](docs/sanitization_log.csv), and [pending publication tasks](docs/technical_pending.md).
 
-La infraestructura experimental de ejecución fue retirada del árbol de trabajo tras redefinir el alcance; permanece en el historial de Git. El Rmd global recupera la copia documental saneada anterior a su adaptación.
+The experimental execution infrastructure was removed from the working tree after the scope was redefined; it remains in the Git history. The global Rmd restores the sanitized documentary copy from before its adaptation.

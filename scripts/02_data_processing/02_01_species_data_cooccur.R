@@ -7,7 +7,7 @@ library(readxl)
 library(ggplot2)
 
 # ============================================================
-# 1. DEFINIR RUTAS
+# 1. DEFINE PATHS
 # ============================================================
 
 local = "__CONFIGURE_PATH_01__"
@@ -26,7 +26,7 @@ head(species_hv_names)
 
 
 # ============================================================
-# 3. CARGAR DATOS
+# 3. LOAD DATA
 # ============================================================
 
 dens_5m   <- read_csv(paste0(data_dir_5m, "/species_densities.csv"), locale = locale(decimal_mark = "."))
@@ -40,12 +40,12 @@ head(dens_400m)
 species_hv_names <- read_excel(list_global_species, 
     sheet = "species_hv_names")
 head(species_hv_names)
-#cada SampID = una unidad de muestreo
-#cada fila = una especie presente en esa unidad
-#density_n100m2 = abundancia/densidad
+#each SampID = one sampling unit
+#each row = one species present in that unit
+#density_n100m2 = abundance/density
 
 # ============================================================
-# 4. REVISAR COLUMNAS
+# 4. INSPECT COLUMNS
 # ============================================================
 
 names(dens_5m)
@@ -56,7 +56,7 @@ names(species_hv_names)
 glimpse(dens_5m)
 
 # ============================================================
-# 5. LISTA DE ESPECIES A MANTENER
+# 5. LIST OF SPECIES TO RETAIN
 # ============================================================
 
 species_keep <- species_hv_names %>%
@@ -65,7 +65,7 @@ species_keep <- species_hv_names %>%
   sort()
 species_keep
 # ============================================================
-# 6. COMPROBAR COINCIDENCIAS CON NORUEGA
+# 6. CHECK MATCHES WITH NORWAY
 # ============================================================
 
 intersect_5m <- intersect(unique(dens_5m$clean_taxonomy), species_keep)
@@ -85,7 +85,7 @@ sort(intersect_400m)
 
 
 # ============================================================
-# 7. FUNCIÓN PARA CREAR MATRIZ PRESENCIA-AUSENCIA
+# 7. FUNCTION TO CREATE A PRESENCE-ABSENCE MATRIX
 # ============================================================
 
 create_pa_matrix <- function(dens_df, species_keep) {
@@ -109,15 +109,15 @@ create_pa_matrix <- function(dens_df, species_keep) {
 }
 
 # ============================================================
-# 8. MATRICES PRESENCIA-AUSENCIA POR ESCALA
+# 8. PRESENCE-ABSENCE MATRICES BY SCALE
 # ============================================================
 
-# se calcula la matriz presencia-ausencia base. Las filas son los SampID y las columnas las especies
-# No es la matriz de coocurrencia, sino la de presencia-ausencia. La matriz de coocurrencia se calcula a partir de esta matriz de presencia-ausencia
-#Sirve para:
-# - describir comunidades
-# - calcular distancias
-# - calcular coocurrencia
+# Calculate the base presence-absence matrix. Rows are SampID and columns are species
+# This is the presence-absence matrix, not the co-occurrence matrix. The co-occurrence matrix is calculated from this presence-absence matrix
+#Used to:
+# - describe communities
+# - calculate distances
+# - calculate co-occurrence
 
 
 pa_5m   <- create_pa_matrix(dens_5m, species_keep)
@@ -129,11 +129,11 @@ dim(pa_40m)
 dim(pa_400m)
 
 # ============================================================
-# 9. REVISAR OCUPACIÓN LOCAL DE LAS ESPECIES
+# 9. EXAMINE LOCAL SPECIES OCCUPANCY
 # ============================================================
 
-# Occupancy = número de muestras ocupadas por cada especie
-# número de SampID donde aparece una especie
+# Occupancy = number of samples occupied by each species
+# number of SampID in which a species occurs
 occ_5m <- colSums(pa_5m)
 occ_40m <- colSums(pa_40m)
 occ_400m <- colSums(pa_400m)
@@ -147,13 +147,13 @@ summary(occ_400m)
 #    1.00    18.25   179.50  1091.38  1085.25 14051.00 
 
 
-# Interpretación:
-# - algunas especies aparecen solo en 1 muestra, especies raras
-# - la especie típica aparece en ~180 muestras
-# - algunas especies hipercomunes aparecen en >14000 muestras
+# Interpretation:
+# - some species occur in only 1 sample: rare species
+# - the typical species occurs in ~180 samples
+# - some extremely common species occur in >14000 samples
 
 # ============================================================
-# 10. FILTRAR ESPECIES MUY RARAS
+# 10. FILTER VERY RARE SPECIES
 # ============================================================
 
 min_occ <- 5
@@ -167,13 +167,13 @@ dim(pa_40m_filt) # 96 sp
 dim(pa_400m_filt) # 77 sp
 
 # ============================================================
-# 11. MATRICES DE DISTANCIA JACCARD ENTRE ESPECIES
+# 11. JACCARD DISTANCE MATRICES BETWEEN SPECIES
 # ============================================================
-# vegdist devuelve directamente: 1-Jaccard, es decir, 
-#la distancia de Jaccard entre cada par de especies. 
-#La distancia de Jaccard es una medida de disimilitud que varía entre 0 y 1, 
-#donde 0 indica que las especies tienen distribuciones idénticas (coocurren en todas las muestras) y 
-#1 indica que las especies no coocurren en ninguna muestra.
+# vegdist directly returns: 1-Jaccard, i.e., 
+#the Jaccard distance between each pair of species. 
+#Jaccard distance is a measure of dissimilarity ranging from 0 to 1, 
+#where 0 indicates that the species have identical distributions (co-occur in all samples) and 
+#1 indicates that the species do not co-occur in any sample.
 
 jaccard_5m <- vegdist(
   t(pa_5m_filt),
@@ -197,15 +197,15 @@ jaccard_5m_mat <- as.matrix(jaccard_5m)
 jaccard_40m_mat <- as.matrix(jaccard_40m)
 jaccard_400m_mat <- as.matrix(jaccard_400m)
 
-# 0 = distribuciones muy similares
-# 1 = distribuciones muy distintas
+# 0 = very similar distributions
+# 1 = very different distributions
 
 head(jaccard_5m_mat)
 
 
 # ============================================================
-# 12. MATRICES DE COOCURRENCIA DESCRIPTIVA
-# número de SampID compartidos por cada par de especies
+# 12. DESCRIPTIVE CO-OCCURRENCE MATRICES
+# number of SampID shared by each pair of species
 # ============================================================
 
 shared_5m <- t(pa_5m_filt) %*% pa_5m_filt
@@ -217,7 +217,7 @@ shared_40m[1:5, 1:5]
 shared_400m[1:5, 1:5]
 
 # ============================================================
-# 13. GUARDAR RESULTADOS
+# 13. SAVE RESULTS
 # ============================================================
 
 save_path <- paste0(local, "/01_outputs/cooccurrence_matrices")
@@ -288,8 +288,8 @@ ggplot(jaccard_df_scales, aes(x = value, color = scale)) +
 
 
 
-# Distribución de distancias Jaccard por escala
-# mejor boxplot + jitter
+# Distribution of Jaccard distances by scale
+# prefer boxplot + jitter
 
 jaccard_df_scales <- bind_rows(
   data.frame(scale = "5 m", value = jaccard_5m_mat[upper.tri(jaccard_5m_mat)]),
@@ -333,7 +333,7 @@ colors <- c(
 )
 
 # ============================================================
-# PROPORCIÓN DE PARES CON JACCARD = 1
+# PROPORTION OF PAIRS WITH JACCARD = 1
 # ============================================================
 
 jaccard_summary <- jaccard_df_scales %>%

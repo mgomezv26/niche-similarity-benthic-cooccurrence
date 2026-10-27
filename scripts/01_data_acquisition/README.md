@@ -1,89 +1,91 @@
-# 01 — Adquisición y preparación de datos originales
+# 01 — Acquisition and preparation of original data
 
-Esta carpeta contiene los scripts utilizados para obtener los registros de ocurrencia de especies bentónicas y preparar los datos ambientales procedentes de fuentes externas.
+**Language: [English](README.md) | [Español](README.es.md)**
 
-Los datos utilizados en el estudio proceden principalmente de **GBIF, OBIS, Bio-ORACLE, Copernicus Marine Service y cartografía de sedimentos marinos**.
+This folder contains the scripts used to obtain occurrence records for benthic species and prepare environmental data from external sources.
 
-El objetivo de esta etapa es conservar las fuentes originales y preparar los productos necesarios para el procesamiento ambiental y espacial posterior.
+The data used in the study come mainly from **GBIF, OBIS, Bio-ORACLE, Copernicus Marine Service, and marine sediment maps**.
+
+The objective of this stage is to preserve the original sources and prepare the products required for subsequent environmental and spatial processing.
 
 ## 1. Scripts
 
-| Script | Función | Productos principales |
+| Script | Function | Main products |
 | --- | --- | --- |
-| `01_01_GBIF_download.R` | Descarga de registros de ocurrencia de especies desde GBIF. | Datos originales de ocurrencias GBIF |
-| `01_02_OBIS_download.R` | Descarga de registros de ocurrencia de especies desde OBIS. | Datos originales de ocurrencias OBIS |
-| `01_03_Enviromental_Variables.R` | Preparación de variables ambientales de Bio-ORACLE y cartografía de sedimentos. | Rásteres ambientales intermedios |
-| `01_04_Download_Copernicus.py` | Descarga de datos de clorofila de Copernicus Marine Service para el periodo de estudio. | Archivos oceanográficos originales de Copernicus |
+| `01_01_GBIF_download.R` | Downloads species occurrence records from GBIF. | Original GBIF occurrence data |
+| `01_02_OBIS_download.R` | Downloads species occurrence records from OBIS. | Original OBIS occurrence data |
+| `01_03_Enviromental_Variables.R` | Prepares Bio-ORACLE environmental variables and sediment maps. | Intermediate environmental rasters |
+| `01_04_Download_Copernicus.py` | Downloads chlorophyll data from Copernicus Marine Service for the study period. | Original Copernicus oceanographic files |
 
-Los scripts se han reorganizado y renombrado para mantener una nomenclatura coherente con las demás etapas del proyecto.
+The scripts have been reorganized and renamed to maintain nomenclature consistent with the other project stages.
 
-## 2. Fuentes de datos
+## 2. Data sources
 
 ### 2.1. GBIF — Global Biodiversity Information Facility
 
 **Script:** `01_01_GBIF_download.R`
 
-GBIF proporciona registros de presencia de especies procedentes de colecciones científicas, observaciones y otras fuentes de biodiversidad.
+GBIF provides species presence records from scientific collections, observations, and other biodiversity sources.
 
-Los registros descargados constituyen una de las fuentes principales para construir la base de datos de ocurrencias del estudio.
+The downloaded records are one of the principal sources for constructing the study's occurrence database.
 
-La depuración, armonización y combinación con los registros OBIS se realiza posteriormente en `02_data_processing/`.
+Cleaning, harmonization, and integration with OBIS records are performed subsequently in `02_data_processing/`.
 
 ### 2.2. OBIS — Ocean Biodiversity Information System
 
 **Script:** `01_02_OBIS_download.R`
 
-OBIS proporciona registros georreferenciados de especies marinas.
+OBIS provides georeferenced records of marine species.
 
-Estos datos complementan los registros procedentes de GBIF y permiten ampliar la cobertura espacial de las ocurrencias de organismos bentónicos.
+These data complement the GBIF records and extend the spatial coverage of benthic organism occurrences.
 
-La integración entre ambas fuentes se realiza en los scripts de procesamiento de ocurrencias de la etapa 02.
+The two sources are integrated in the occurrence-processing scripts of stage 02.
 
 ### 2.3. Bio-ORACLE
 
 **Script:** `01_03_Enviromental_Variables.R`
 
-Bio-ORACLE proporciona variables ambientales marinas utilizadas para caracterizar las condiciones ecológicas de los organismos bentónicos.
+Bio-ORACLE provides marine environmental variables used to characterize the ecological conditions of benthic organisms.
 
-El estudio utiliza datos ambientales correspondientes a los periodos:
+The study uses environmental data for the following periods:
 
 - 2000–2010.
 - 2010–2020.
 
-Los productos de ambos periodos se combinan para representar las condiciones ambientales del intervalo de estudio.
+The products from both periods are combined to represent environmental conditions over the study interval.
 
-Entre las variables consideradas se encuentran la batimetría, oxígeno disuelto, pH, productividad, nutrientes, salinidad, velocidad de las corrientes y temperatura.
+The variables considered include bathymetry, dissolved oxygen, pH, productivity, nutrients, salinity, current velocity, and temperature.
 
-La selección final de predictores y su armonización espacial se realiza posteriormente en `02_03_Join_Harmonise_Enviromental_Variables.R`.
+The final selection of predictors and their spatial harmonization are performed subsequently in `02_03_Join_Harmonise_Enviromental_Variables.R`.
 
-### 2.4. Sedimentos marinos
+### 2.4. Marine sediments
 
 **Script:** `01_03_Enviromental_Variables.R`
 
-Se incorpora información sobre la composición del sustrato marino a partir de una clasificación de litología del fondo oceánico.
+Information on marine substrate composition is incorporated from a classification of seafloor lithology.
 
-La fuente original contiene categorías de sedimento que posteriormente permiten derivar variables relacionadas con:
+The original source contains sediment categories that subsequently allow variables to be derived for:
 
-- El tamaño del sedimento.
-- El origen orgánico o inorgánico del material.
+- Sediment size.
+- The organic or inorganic origin of the material.
 
-Las clases de sedimento se tratan como información categórica durante su procesamiento espacial.
+Sediment classes are treated as categorical information during spatial processing.
 
 ### 2.5. Copernicus Marine Service
 
 **Script:** `01_04_Download_Copernicus.py`
 
-Copernicus Marine Service proporciona los datos de concentración de clorofila utilizados en el estudio como indicador de las condiciones de productividad marina.
+Copernicus Marine Service provides the chlorophyll concentration data used in the study as an indicator of marine productivity conditions.
 
-El periodo de referencia es **2000–2020**.
+The reference period is **2000–2020**.
 
-Los productos descargados se procesan posteriormente para obtener una representación temporal media compatible con las demás variables ambientales.
+The downloaded products are subsequently processed to obtain a temporal mean representation compatible with the other environmental variables.
 
-La transformación exacta de los archivos originales de Copernicus hasta el ráster medio final debe comprobarse y documentarse antes de considerar esta etapa completamente reproducible.
+The exact transformation of the original Copernicus files into the final mean raster must be checked and documented before this stage can be considered fully reproducible.
 
-## 3. Organización de los datos
+## 3. Data organization
 
-Los archivos originales e intermedios se organizan mediante la siguiente estructura:
+The original and intermediate files are organized using the following structure:
 
 ```text
 data/
@@ -101,73 +103,73 @@ data/
         └── chl_mean_2000_2020_v0.tif
 ```
 
-Los archivos de ocurrencias originales se conservan en `data/raw/occurrences/`.
+Original occurrence files are retained in `data/raw/occurrences/`.
 
-Los archivos NetCDF originales de Bio-ORACLE y sedimentos se mantienen separados de los rásteres derivados.
+The original Bio-ORACLE and sediment NetCDF files are kept separate from the derived rasters.
 
-**Nota:** esta estructura documenta la organización prevista de los productos. Las rutas exactas de descarga de GBIF, OBIS y Copernicus deben contrastarse con los scripts y sus configuraciones antes de ejecutar nuevamente el flujo.
+**Note:** this structure documents the intended organization of the products. The exact GBIF, OBIS, and Copernicus download paths must be checked against the scripts and their configurations before rerunning the workflow.
 
-## 4. Metodología general
+## 4. General methodology
 
-### Descarga de registros de ocurrencia
+### Downloading occurrence records
 
-Los scripts de GBIF y OBIS obtienen los registros georreferenciados correspondientes a las especies consideradas en el estudio.
+The GBIF and OBIS scripts obtain georeferenced records for the species considered in the study.
 
-En esta fase se conservan los datos de origen. Las operaciones de depuración y armonización se realizan en la siguiente etapa.
+Source data are retained at this stage. Cleaning and harmonization are performed in the next stage.
 
-### Preparación de variables de Bio-ORACLE
+### Preparing Bio-ORACLE variables
 
-Los datos ambientales de los periodos 2000–2010 y 2010–2020 se combinan para obtener las variables representativas del intervalo temporal de estudio.
+Environmental data from 2000–2010 and 2010–2020 are combined to obtain variables representative of the study interval.
 
-Los rásteres resultantes se utilizan posteriormente como referencia para armonizar los datos de clorofila y sedimentos.
+The resulting rasters are subsequently used as a reference for harmonizing chlorophyll and sediment data.
 
-### Preparación de clorofila
+### Preparing chlorophyll data
 
-Los datos de clorofila procedentes de Copernicus se utilizan para obtener un producto medio correspondiente al periodo 2000–2020.
+Chlorophyll data from Copernicus are used to obtain a mean product for 2000–2020.
 
-El procesamiento histórico desde los archivos descargados hasta el ráster medio todavía no está completamente documentado.
+The historical processing from downloaded files to the mean raster is not yet fully documented.
 
-### Preparación de sedimentos
+### Preparing sediment data
 
-La clasificación original de litología se conserva para su transformación posterior en las variables categóricas utilizadas en el análisis ambiental.
+The original lithological classification is retained for subsequent transformation into the categorical variables used in the environmental analysis.
 
-## 5. Dependencias y flujo de procesamiento
+## 5. Dependencies and processing workflow
 
-**Etapa actual:**
+**Current stage:**
 
 `01_data_acquisition/`
 
-**Etapa posterior:**
+**Next stage:**
 
 `02_data_processing/`
 
-Los scripts de la etapa 02 utilizan los productos obtenidos aquí para:
+The stage 02 scripts use the products obtained here to:
 
-1. Procesar los registros originales de ocurrencia.
-2. Unificar los datos procedentes de GBIF y OBIS.
-3. Preparar y armonizar los predictores ambientales.
-4. Evaluar la correlación entre variables ambientales.
-5. Generar los rásteres ambientales definitivos.
+1. Process the original occurrence records.
+2. Integrate data from GBIF and OBIS.
+3. Prepare and harmonize environmental predictors.
+4. Evaluate correlations among environmental variables.
+5. Generate the final environmental rasters.
 
-Posteriormente, `03_spatial_processing/` extrae estos valores a las celdas marinas de 0,1°.
+Subsequently, `03_spatial_processing/` extracts these values for the 0.1° marine cells.
 
-## 6. Reproducibilidad y estado
+## 6. Reproducibility and status
 
-Los scripts se han organizado siguiendo las fuentes de datos utilizadas en el manuscrito.
+The scripts have been organized according to the data sources used in the manuscript.
 
-**Estado actual: código reorganizado, pendiente de ejecución integral y validación frente a los productos históricos.**
+**Current status: reorganized code, pending end-to-end execution and validation against the historical products.**
 
-Antes de considerar reproducida esta etapa, será necesario comprobar:
+Before this stage can be considered reproduced, the following must be checked:
 
-- Las consultas y parámetros utilizados en las descargas de GBIF y OBIS.
-- Los filtros temporales y taxonómicos aplicados.
-- La correspondencia entre los registros descargados y los archivos originales conservados.
-- Las variables y periodos temporales de Bio-ORACLE.
-- Los parámetros utilizados para descargar los datos de Copernicus.
-- El procedimiento de obtención de la clorofila media para 2000–2020.
-- La correspondencia entre las categorías originales de sedimento y las variables derivadas.
-- Las versiones y referencias de los productos ambientales originales.
+- The queries and parameters used for GBIF and OBIS downloads.
+- The temporal and taxonomic filters applied.
+- The correspondence between downloaded records and retained original files.
+- The Bio-ORACLE variables and time periods.
+- The parameters used to download Copernicus data.
+- The procedure for obtaining mean chlorophyll for 2000–2020.
+- The correspondence between original sediment categories and derived variables.
+- The versions and references of the original environmental products.
 
-Los datos originales de gran tamaño se conservan actualmente fuera del repositorio Git, en el almacenamiento externo del proyecto.
+Large original datasets are currently retained outside the Git repository, in the project's external storage.
 
-El repositorio contiene los scripts necesarios para documentar y reconstruir el procedimiento, pero **no se ha certificado todavía la reproducción exacta de los productos históricos**.
+The repository contains the scripts required to document and reconstruct the procedure, but **exact reproduction of the historical products has not yet been certified**.

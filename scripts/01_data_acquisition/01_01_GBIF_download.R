@@ -11,7 +11,7 @@ library(sf)
 
 library(here)
 
-# Leer datos de GBIF
+# Read GBIF data
 list_species <- read_excel(
   here("data", "list_of_species.xlsx")
 )
